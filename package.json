@@ -1,0 +1,65 @@
+{
+  "name": "node-sys",
+  "version": "1.0.0",
+  "description": "Universal package installer, get the command for managing packages, or auto install any package, using one command for all platforms.",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "node-sys": "bin/sys.js"
+  },
+  "scripts": {
+    "test": "mocha -R list test/*.js",
+    "coverage": "npx c8 --reporter json --reporter text npm test && npx codecov -f coverage/coverage-final.json"
+  },
+  "files": [
+    "*.js",
+    "LICENSE",
+    "README.md",
+    "bin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/techno-express/node-sys.git"
+  },
+  "keywords": [
+    "apt-get",
+    "choco",
+    "chocolatey",
+    "brew",
+    "pacman",
+    "nix",
+    "yum",
+    "dnf",
+    "pkg",
+    "pkg_add",
+    "emerge",
+    "zypper",
+    "nix",
+    "cross",
+    "platform",
+    "cross-platform",
+    "package",
+    "manager",
+    "installer"
+  ],
+  "author": "l. stubbs <technoexpressnet@gmail.com>",
+  "contributors": [
+    "Arve Seljebu"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/techno-express/node-sys/issues"
+  },
+  "homepage": "https://github.com/techno-express/node-sys#readme",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "dependencies": {
+    "which": "^2.0.2",
+    "minimist": "1.2.5"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^8.2.1"
+  }
+}
