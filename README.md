@@ -21,14 +21,21 @@ npm install node-sys
 ```js
 import { packager } from 'node-sys';
 
-/* - 'brew install' on OS X if homebrew is installed.
+/**
+ * Gets the system package manager install command.
+ *
+ * - 'brew install' on OS X if homebrew is installed.
  * - 'sudo apt-get install' on debian platforms.
  * - 'sudo yum install' on red hat platforms.
- * - 'your_package_manager install' if no package manager is found.
+ * - 'System OS package manager not found' if no package manager is found.
  *
  * Throws if `process.platform` is none of darwin, freebsd, linux, sunos or win32.
  */
-console.log(`Please install pandoc: ${packager().command} pandoc`);
+const sys = packager();
+
+console.log('Do system OS require sudo? ' + sys.sudo);
+console.log('The system OS install command: ' + sys.command);
+console.log('To fully install a `pandoc` package run: ' + sys.installer + ' pandoc');
 ```
 
 ### Install `vim` package onto host, using system's default package manager
