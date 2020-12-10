@@ -7,3 +7,7 @@ tell application "System Events"
 		click button "Agree" of window "License Agreement"
 	end tell
 end tell
+
+do shell script "curl -fsSL -o install.sh https://raw.githubusercontent.com/Homebrew/install/master/install.sh"
+do shell script "sleep 1"
+do shell script "/bin/bash install.sh"
