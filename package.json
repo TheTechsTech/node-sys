@@ -12,7 +12,7 @@
     "coverage": "npx c8 --reporter json --reporter text npm test && npx codecov -f coverage/coverage-final.json"
   },
   "files": [
-    "*.js",
+    "index.js",
     "LICENSE",
     "README.md",
     "bin"

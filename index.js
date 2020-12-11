@@ -1,8 +1,13 @@
 'use strict';
 
-import { sync } from 'which';
+import which from 'which';
 import { spawn } from 'child_process';
 
+const sync = which.sync;
+
+/**
+ * Supported package commands
+ */
 const sysCommands = {
   brew: 'brew install',
   port: 'sudo port install',
@@ -20,6 +25,9 @@ const sysCommands = {
   crew: 'crew install'
 };
 
+/**
+ * Supported package managers
+ */
 const sysManagers = {
   darwin: ['brew', 'port', 'pkgin'],
   win32: ['choco', 'powershell'],
@@ -31,7 +39,7 @@ const sysManagers = {
 
 function sysManager(reject) {
   if (!reject)
-    let reject = (data) => {
+    reject = (data) => {
       return new Error(data);
     }
 
@@ -64,7 +72,7 @@ function sysManager(reject) {
  *
  * @throws if `process.platform` is none of darwin, freebsd, linux, sunos or win32.
  */
-export const packager = sys.packager = function () {
+export const packager = Sys.packager = function () {
   let sys = sysManager();
   if (sys[0])
     return {
@@ -84,7 +92,7 @@ export const packager = sys.packager = function () {
  * - Defaults to 'get os-manager installer' if no package manager is found.
  * @throws Throws if `process.platform` is none of darwin, freebsd, linux, sunos or win32.
  */
-export const installer = sys.installer = function (application) {
+export const installer = Sys.installer = function (application) {
   let installOutput = '';
   return new Promise(function (resolve, reject) {
     if (!application)
@@ -106,7 +114,6 @@ export const installer = sys.installer = function (application) {
     if ((args) && (install))
       system = args.concat(install).concat(whatToInstall);
     if (cmd != 'powershell') {
-      console.log('Running ' + cmd + ' ' + system);
       const proc = spawn(cmd, system, {
         stdio: 'pipe'
       });
@@ -114,9 +121,11 @@ export const installer = sys.installer = function (application) {
       proc.on('error', (err) => {
         return reject(err);
       });
+
       proc.on('close', () => {
         return resolve(installOutput);
       });
+
       proc.on('exit', () => {
         return resolve(installOutput);
       });
@@ -132,6 +141,7 @@ export const installer = sys.installer = function (application) {
           return reject(data.toString());
         }
       });
+
       proc.stderr.on('data', (data) => {
         return reject(data.toString());
       });
@@ -156,7 +166,7 @@ export const installer = sys.installer = function (application) {
  *
  * @returns String|Null
  */
-export const where = sys.where = function (executable) {
+export const where = Sys.where = function (executable) {
   let found = sync(executable, {
     nothrow: true
   });
@@ -164,6 +174,6 @@ export const where = sys.where = function (executable) {
   return found;
 }
 
-function sys() { }
+function Sys() { }
 
-export default sys;
+export default Sys;

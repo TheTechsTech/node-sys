@@ -1,7 +1,6 @@
 import chai from 'chai';
-import { packager } from '../index.js';
-import { installer } from '../index.js';
-import { where } from '../index.js';
+import Sys from '../index.js';
+import { packager, installer, where } from '../index.js';
 
 const expect = chai.expect;
 
@@ -15,7 +14,6 @@ describe('Method: `packager`', function () {
     let i = packager();
     expect(i.sudo).to.be.a('boolean');
     expect(i.command).to.be.a('string');
-    console.log(i.installer);
     expect(i.installer).to.be.a('string');
     done();
   });
@@ -137,5 +135,18 @@ describe('Method: `where`', function () {
     expect(found).to.be.null;
     done();
 
+  });
+});
+
+describe('Function: `Sys`', function () {
+  it('should instanced itself like a class', function () {
+    const sys = new Sys();
+    expect(sys).to.be.an.instanceof(Sys);
+  });
+
+  it('should respond to commands as methods', function () {
+    expect(Sys).itself.to.respondTo('installer');
+    expect(Sys).itself.to.respondTo('where');
+    expect(Sys).itself.to.respondTo('packager');
   });
 });

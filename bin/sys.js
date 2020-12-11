@@ -65,7 +65,7 @@ if (argv.help || argv.h) {
         //
       });
   } else {
-    console.log(packager().command);
+    console.log(packager().installer);
   }
 } else {
   console.log(help());
