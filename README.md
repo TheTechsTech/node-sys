@@ -2,7 +2,7 @@
 
 [![NPM](https://nodei.co/npm/node-sys.png)](https://nodei.co/npm/node-sys/)
 
-[![Dependencies Status](http://img.shields.io/david/techno-express/node-sys.svg)](https://david-dm.org/techno-express/node-sys) [![Node.js CI](https://github.com/techno-express/node-sys/workflows/Node.js%20CI/badge.svg)](https://github.com/techno-express/node-sys/actions) [![codecov](https://codecov.io/gh/techno-express/node-sys/branch/master/graph/badge.svg?token=nups0UsVPw)](https://codecov.io/gh/techno-express/node-sys) [![Maintainability](https://api.codeclimate.com/v1/badges/54f89d3ae887724ceb93/maintainability)](https://codeclimate.com/github/techno-express/system-install/maintainability) [![Release](http://img.shields.io/npm/v/node-sys.svg)](https://www.npmjs.org/package/node-sys)
+[![Dependencies Status](http://img.shields.io/david/techno-express/node-sys.svg)](https://david-dm.org/techno-express/node-sys) [![Node.js CI](https://github.com/techno-express/node-sys/workflows/Node.js%20CI/badge.svg)](https://github.com/techno-express/node-sys/actions) [![codecov](https://codecov.io/gh/techno-express/node-sys/branch/master/graph/badge.svg?token=5Mi0USRYsY)](https://codecov.io/gh/techno-express/node-sys) [![Maintainability](https://api.codeclimate.com/v1/badges/54f89d3ae887724ceb93/maintainability)](https://codeclimate.com/github/techno-express/system-install/maintainability) [![Release](http://img.shields.io/npm/v/node-sys.svg)](https://www.npmjs.org/package/node-sys)
 
 > Universal package installer, get the command for managing packages, or auto install any package, using one command for all platforms. E.g. `sudo apt-get install` *!@#$software* for Debian-based systems, would be `node-sys` *!@#$software*.
 
