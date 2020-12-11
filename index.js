@@ -49,7 +49,7 @@ function sysManager(reject) {
   }
 
   managers = managers.filter(function (mng) {
-    return (where(mng) != null);
+    return (where(mng) !== null);
   });
 
   if (!managers.length) {
@@ -76,7 +76,7 @@ export const packager = Sys.packager = function () {
   let sys = sysManager();
   if (sys[0])
     return {
-      sudo: (sys[0] == 'sudo'),
+      sudo: ((sys[0] == 'sudo') ? true : false),
       command: ((!sys[2]) ? sys[0] : sys[1]),
       installer: sys.join(' ')
     }

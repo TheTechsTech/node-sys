@@ -74,8 +74,8 @@ describe('Method: `packager` for platform set to `win32`', function () {
   });
 
   it('should return `false` for need sudo', function (done) {
-    let i = packager();
-    expect(i.sudo).to.not.equal(true);
+    let sys = packager();
+    expect(sys.sudo).to.not.equal(true);
     done();
   });
 });
