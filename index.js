@@ -13,6 +13,7 @@ const sysCommands = {
   port: 'sudo port install',
   pkgin: 'sudo pkgin install',
   choco: 'choco install',
+  powershell: "powershell 'Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))'",
   'apt-get': 'sudo apt-get install',
   yum: 'sudo yum install',
   dnf: 'sudo dnf install',
