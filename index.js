@@ -8,7 +8,7 @@ const sync = which.sync;
 /**
  * Supported package commands
  */
-const sysCommands = {
+const SYS_COMMANDS = {
   brew: 'brew install',
   port: 'sudo port install',
   pkgin: 'sudo pkgin install',
@@ -29,7 +29,7 @@ const sysCommands = {
 /**
  * Supported package managers
  */
-const sysManagers = {
+const SYS_MANAGERS = {
   darwin: ['brew', 'port', 'pkgin'],
   win32: ['choco', 'powershell'],
   linux: ['apt-get', 'yum', 'dnf', 'nix', 'zypper', 'emerge', 'pacman', 'crew'],
@@ -44,7 +44,7 @@ function sysManager(reject) {
       return new Error(data);
     }
 
-  let managers = sysManagers[process.platform];
+  let managers = SYS_MANAGERS[process.platform];
   if (!managers || !managers.length) {
     return reject('unknown platform \'' + process.platform + '\'');
   }
@@ -57,7 +57,7 @@ function sysManager(reject) {
     return reject('System OS package manager not found');
   }
 
-  return sysCommands[managers[0]].split(' ');
+  return SYS_COMMANDS[managers[0]].split(' ');
 }
 
 /**
@@ -77,7 +77,7 @@ export const packager = Sys.packager = function () {
   let sys = sysManager();
   if (sys[0])
     return {
-      sudo: ((sys[0] == 'sudo') ? true : false),
+      sudo: (sys[0] === 'sudo'),
       command: ((!sys[2]) ? sys[0] : sys[1]),
       installer: sys.join(' ')
     }
