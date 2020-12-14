@@ -138,7 +138,8 @@ export const installer = Sys.installer = function (application) {
           return resolve('For testing only, no package installed.');
         }
 
-        if (data.includes('The package was not found') || data.includes('Unable to locate package')) {
+        if (installOutput.includes('The package was not found') || installOutput.includes('Unable to locate package')) {
+          proc.kill('SIGKILL');
           return reject(data.toString());
         }
       });

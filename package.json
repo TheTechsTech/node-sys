@@ -8,7 +8,7 @@
     "node-sys": "bin/installer.js"
   },
   "scripts": {
-    "test": "mocha -R list test/*.js",
+    "test": "mocha -R list test/*.js --timeout=0",
     "coverage": "npx c8 --reporter json --reporter text npm test && npx codecov -f coverage/coverage-final.json"
   },
   "files": [
