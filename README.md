@@ -71,7 +71,7 @@ To actually install an system package.
 
 ```s
 $ node-sys vim
-...
+installing...
 ```
 
 ## Supported package managers
