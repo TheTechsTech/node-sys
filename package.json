@@ -57,7 +57,8 @@
   "dependencies": {
     "which": "^2.0.2",
     "minimist": "1.2.5",
-    "powershell": "*"
+    "powershell": "*",
+    "cross-spawn": "^7.0.3"
   },
   "devDependencies": {
     "chai": "^4.2.0",

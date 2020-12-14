@@ -2,7 +2,13 @@
 
 import which from 'which';
 import { spawn } from 'child_process';
+//import spawn from 'cross-spawn';
+//import { dirname, join } from 'path';
+//import { fileURLToPath } from 'url';
 
+//const __filename = fileURLToPath(
+//import.meta.url);
+//const __dirname = dirname(__filename);
 const sync = which.sync;
 
 /**
@@ -115,8 +121,18 @@ export const installer = Sys.installer = function (application) {
     if ((args) && (install))
       system = args.concat(install).concat(whatToInstall);
     if (cmd != 'powershell') {
+      let input = '';
+      //if (cmd.includes('choco')) {
+      //cmd = where('choco');
+      //system = [cmd].concat(system);
+      //system = [cmd].concat('-ArgumentList').concat(system);
+      //cmd = join(__dirname, 'bin', 'sudo.bat');
+      //}
+
       const proc = spawn(cmd, system, {
-        stdio: 'pipe'
+        // stdio: 'inherit',
+        stdio: 'pipe',
+        // shell: true
       });
 
       proc.on('error', (err) => {
@@ -132,15 +148,15 @@ export const installer = Sys.installer = function (application) {
       });
 
       proc.stdout.on('data', (data) => {
-        installOutput += data.toString();
+        installOutput += input = data.toString();
         if (system.includes('node-fake-tester')) {
           proc.kill('SIGKILL');
           return resolve('For testing only, no package installed.');
         }
 
-        if (installOutput.includes('The package was not found') || installOutput.includes('Unable to locate package')) {
+        if (input.includes('The package was not found') || input.includes('Unable to locate package') || input.includes('is denied') || input.includes('Throwing error')) {
           proc.kill('SIGKILL');
-          return reject(data.toString());
+          return reject(input);
         }
       });
 
