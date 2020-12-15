@@ -122,7 +122,7 @@ export const installer = Sys.installer = function (application) {
 
     if (cmd != 'powershell') {
       let input = '';
-      if (cmd.includes('choco')) {
+      if (cmd.includes('choco') && !system.includes('node-fake-tester')) {
         cmd = where('choco');
         system = [cmd].concat(system);
         cmd = join(__dirname, 'bin', 'sudo.bat');
