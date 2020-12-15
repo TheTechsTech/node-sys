@@ -129,6 +129,35 @@ describe('Method: `installer` install packages `unzip` and `nano`', function () 
   });
 });
 
+describe('Method: `installer` install packages `unzip` and `nano`, platform set to `linux`', function () {
+  // save original process.platform
+  before(function () {
+    this.originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform');
+    // redefine process.platform
+    Object.defineProperty(process, 'platform', {
+      value: 'linux'
+    });
+  });
+  // restore original process.platform
+  after(function () {
+    Object.defineProperty(process, 'platform', this.originalPlatform);
+  });
+
+  it('should return on successful install of multiple packages or print error on unknown platform, platform set to `linux`', function (done) {
+    let multi = ['unzip', 'nano', 'node-fake-tester'];
+
+    installer(multi)
+      .then(function (data) {
+        expect(data).to.be.a('string');
+        done();
+      })
+      .catch(function (err) {
+        expect(err).to.not.be.empty;
+        done();
+      });
+  });
+});
+
 describe('Method: `where`', function () {
   it('should return null/empty for executable not found', function (done) {
     let found = where('node-fake-tester');
