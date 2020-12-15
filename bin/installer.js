@@ -1,12 +1,18 @@
 #!/usr/bin/env node
 
-import { packager, installer, where } from 'node-sys';
+import { packager, installer, where } from '../index.js';
 import minimist from 'minimist';
 import {
   createRequire
 } from 'module';
 import PowerShell from 'powershell';
+import { spawn } from 'child_process';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(
+  import.meta.url);
+const __dirname = dirname(__filename);
 
 const require = createRequire(
   import.meta.url);
@@ -40,7 +46,7 @@ function help() {
     '',
     '  -h, --help       Output usage information.',
     '  -v, --version    Output version number.',
-    '  -g, --get        Get ad install an platform package manger, on `macOS` - brew, on `Windows` - chocolaty.',
+    '  -g, --get        Get and install an platform package manger, on `macOS` - brew, on `Windows` - chocolaty.',
     '',
     'Example:',
     '> ' + command + ' nano',
@@ -75,18 +81,21 @@ if (argv.help || argv.h) {
   });
 } else if ((argv.get || argv.g) && process.platform == 'darwin' && where('brew') == null) {
   let installOutput = '';
-  const child = spawn(cmd, {
-    stdio: 'inherit',
-    shell: true
+  let args = join(__dirname, 'xcode-brew-install.scpt');
+  const child = spawn('osascript', [args], {
+    stdio: 'pipe'
   });
 
   child.on('error', (err) => {
+    console.error(err);
   });
 
   child.on('close', () => {
+    console.log(installOutput);
   });
 
   child.on('exit', () => {
+    console.log(installOutput);
   });
 
   child.stdout.on('data', (data) => {
@@ -97,16 +106,17 @@ if (argv.help || argv.h) {
     return new Error(data.toString());
   });
 } else if (argv) {
-  let arguments = argv._;
-  let package = arguments.shift();
-  if (package) {
+  let args = argv._;
+  let packages = args.shift();
+  if (packages) {
     console.log("Installing...");
-    installer(package)
+    packages = (args == '') ? packages : [packages].concat(args);
+    installer(packages)
       .then(function (data) {
-        //
+        console.log(data);
       })
       .catch(function (err) {
-        //
+        console.error(err);
       });
   } else {
     console.log(packager().installer);

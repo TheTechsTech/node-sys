@@ -115,7 +115,7 @@ describe('Method: `installer` for platform set to `other`', function () {
 
 describe('Method: `installer` install packages `unzip` and `nano`', function () {
   it('should return on successful install of multiple packages or print error on unknown platform', function (done) {
-    let multi = ['unzip', 'nano', 'node-fake-tester'];
+    let multi = ['unzip', 'nano', 'node-fake-tester', '--noop'];
 
     installer(multi)
       .then(function (data) {

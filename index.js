@@ -2,13 +2,12 @@
 
 import which from 'which';
 import { spawn } from 'child_process';
-//import spawn from 'cross-spawn';
-//import { dirname, join } from 'path';
-//import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
-//const __filename = fileURLToPath(
-//import.meta.url);
-//const __dirname = dirname(__filename);
+const __filename = fileURLToPath(
+  import.meta.url);
+const __dirname = dirname(__filename);
 const sync = which.sync;
 
 /**
@@ -120,19 +119,18 @@ export const installer = Sys.installer = function (application) {
       system = args.concat(whatToInstall);
     if ((args) && (install))
       system = args.concat(install).concat(whatToInstall);
+
     if (cmd != 'powershell') {
       let input = '';
-      //if (cmd.includes('choco')) {
-      //cmd = where('choco');
-      //system = [cmd].concat(system);
-      //system = [cmd].concat('-ArgumentList').concat(system);
-      //cmd = join(__dirname, 'bin', 'sudo.bat');
-      //}
+      if (cmd.includes('choco')) {
+        cmd = where('choco');
+        system = [cmd].concat(system);
+        cmd = join(__dirname, 'bin', 'sudo.bat');
+      }
 
       const proc = spawn(cmd, system, {
-        // stdio: 'inherit',
         stdio: 'pipe',
-        // shell: true
+        shell: true
       });
 
       proc.on('error', (err) => {

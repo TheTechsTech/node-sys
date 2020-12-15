@@ -6,7 +6,7 @@
 
 > Universal package installer, get the command for managing packages, or auto install any package, using one command for all platforms. E.g. `sudo apt-get install` *!@#$software* for Debian-based systems, would be `node-sys` *!@#$software*.
 
-This is mainly focused on initial installation of an Node JS package that needs additional host software installed. This allows pre and post script install routines.
+This is mainly focused on initial installation of an Node JS package that needs additional host software installed. This allows pre and post script install routines. Can automate the installation of macOS Brew, and Windows Chocolatey package managers.
 
 `node-sys` will try to find which system packaging is installed for the given `process.platform`. If no system package manager is found, `'No package manager found!'` is returned.
 
@@ -72,6 +72,16 @@ To actually install an system package.
 ```s
 $ node-sys vim
 installing...
+```
+
+To install an System OS package manager.
+
+* Will install [chocolatey] for **Windows OS**
+* Will install [brew] for **Apple macOS**
+
+```s
+$ node-sys -g | --get
+...
 ```
 
 ## Supported package managers
