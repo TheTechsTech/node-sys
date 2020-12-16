@@ -18,6 +18,16 @@ const require = createRequire(
   import.meta.url);
 const pack = require('../package.json');
 
+const IS_MACOS = where('osascript');
+const CMD = {
+  win32: join(__dirname, 'sudo.bat'),
+  darwin: ((IS_MACOS === null) ? 'osascript' : join(IS_MACOS, 'osascript'))
+};
+const SYSTEM = {
+  win32: join(__dirname, 'installChocolatey.cmd'),
+  darwin: join(__dirname, 'xcode-brew-install.scpt')
+};
+
 /*
  * Arguments.
  */
@@ -61,41 +71,22 @@ if (argv.help || argv.h) {
   console.log(help());
 } else if (argv.version || argv.v) {
   console.log(pack.version);
-} else if ((argv.get || argv.g) && process.platform == 'win32' && where('choco') == null) {
-  console.log('Download and Install Chocolatey');
-  const ps = new PowerShell("Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))", {
-    executionpolicy: 'Unrestricted'
-  });
-
-  ps.on('error', (err) => {
-    return new Error(err);
-  });
-  ps.on('output', (data) => console.log(data));
-  ps.on('error-output', (data) => {
-    return new Error(data);
-  });
-
-  ps.on('end', () => {
-    console.log('Chocolatey Installed');
-    return;
-  });
-} else if ((argv.get || argv.g) && process.platform == 'darwin' && where('brew') == null) {
+} else if ((argv.get || argv.g)
+  && (
+    (process.platform == 'darwin' && where('brew') === null)
+    || (process.platform == 'win32' && where('choco') === null)
+  )) {
   let installOutput = '';
-  let args = join(__dirname, 'xcode-brew-install.scpt');
-  const child = spawn('osascript', [args], {
-    stdio: 'pipe'
-  });
-
-  child.on('error', (err) => {
-    console.error(err);
+  const child = spawn(CMD[process.platform], SYSTEM[process.platform], {
+    stdio: 'pipe',
   });
 
   child.on('close', () => {
-    console.log(installOutput);
+    return installOutput;
   });
 
   child.on('exit', () => {
-    console.log(installOutput);
+    return installOutput;
   });
 
   child.stdout.on('data', (data) => {
@@ -103,7 +94,7 @@ if (argv.help || argv.h) {
   });
 
   child.stderr.on('data', (data) => {
-    return new Error(data.toString());
+    throw data.toString();
   });
 } else if (argv) {
   let args = argv._;
