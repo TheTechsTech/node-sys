@@ -18,10 +18,9 @@ const require = createRequire(
   import.meta.url);
 const pack = require('../package.json');
 
-const IS_MACOS = where('osascript');
 const CMD = {
   win32: join(__dirname, 'sudo.bat'),
-  darwin: ((IS_MACOS === null) ? 'osascript' : join(IS_MACOS, 'osascript'))
+  darwin: 'sudo osascript'
 };
 const SYSTEM = {
   win32: join(__dirname, 'installChocolatey.cmd'),
