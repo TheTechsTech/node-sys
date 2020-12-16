@@ -77,7 +77,7 @@ if (argv.help || argv.h) {
     || (process.platform == 'win32' && where('choco') === null)
   )) {
   let installOutput = '';
-  const child = spawn(CMD[process.platform], SYSTEM[process.platform], {
+  const child = spawn(CMD[process.platform], [SYSTEM[process.platform]], {
     stdio: 'pipe',
   });
 
