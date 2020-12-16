@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "mocha -R list test/*.js --timeout=0",
-    "coverage": "npx c8 --reporter json --reporter text npm test && npx codecov -f coverage/coverage-final.json"
+    "coverage": "npx c8 --reporter json --reporter text npm test && npx codecov -f coverage/coverage-final.json",
+    "get-installer": "node ./bin/installer.js --get"
   },
   "files": [
     "index.js",
