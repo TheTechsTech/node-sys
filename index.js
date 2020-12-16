@@ -131,8 +131,7 @@ export const installer = Sys.installer = function (application) {
       }
 
       const proc = spawn(cmd, system, {
-        stdio: 'pipe',
-        //shell: true
+        stdio: 'pipe'
       });
 
       proc.on('error', (err) => {
@@ -149,14 +148,14 @@ export const installer = Sys.installer = function (application) {
 
       proc.stdout.on('data', (data) => {
         installOutput += input = data.toString();
-        if (system.includes('node-fake-tester')) {
-          proc.kill('SIGKILL');
-          return resolve('For testing only, no package installed.');
-        }
-
         if (input.includes('The package was not found') || input.includes('Unable to locate package') || input.includes('is denied') || input.includes('Throwing error')) {
           proc.kill('SIGKILL');
           return reject(input);
+        }
+
+        if (system.includes('node-fake-tester')) {
+          proc.kill('SIGKILL');
+          return resolve('For testing only, no package installed.');
         }
       });
 
