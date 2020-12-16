@@ -129,13 +129,13 @@ describe('Method: `installer` install packages `unzip` and `nano`', function () 
   });
 });
 
-describe('Method: `installer` install packages `unzip` and `nano`, platform set to `linux`', function () {
+describe('Method: `installer` install packages `unzip` and `nano`, platform set to `win64`', function () {
   // save original process.platform
   before(function () {
     this.originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform');
     // redefine process.platform
     Object.defineProperty(process, 'platform', {
-      value: 'linux'
+      value: 'win64'
     });
   });
   // restore original process.platform
@@ -143,7 +143,7 @@ describe('Method: `installer` install packages `unzip` and `nano`, platform set 
     Object.defineProperty(process, 'platform', this.originalPlatform);
   });
 
-  it('should return on successful install of multiple packages or print error on unknown platform, platform set to `linux`', function (done) {
+  it('should return on successful install of multiple packages or print error on unknown platform, platform set to `win64`', function (done) {
     let multi = ['unzip', 'nano', 'node-fake-tester'];
 
     installer(multi)
@@ -151,6 +151,29 @@ describe('Method: `installer` install packages `unzip` and `nano`, platform set 
         expect(data).to.be.a('string');
         done();
       })
+      .catch(function (err) {
+        expect(err).to.not.be.empty;
+        done();
+      });
+  });
+});
+
+describe('Method: `installer` install packages `unzip`, platform set to `shell`', function () {
+  // save original process.platform
+  before(function () {
+    this.originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform');
+    // redefine process.platform
+    Object.defineProperty(process, 'platform', {
+      value: 'shell'
+    });
+  });
+  // restore original process.platform
+  after(function () {
+    Object.defineProperty(process, 'platform', this.originalPlatform);
+  });
+
+  it('should error on no package manager installed, platform set to `shell`', function (done) {
+    installer('unzip')
       .catch(function (err) {
         expect(err).to.not.be.empty;
         done();

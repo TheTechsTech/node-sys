@@ -40,7 +40,9 @@ const SYS_MANAGERS = {
   linux: ['apt-get', 'yum', 'dnf', 'nix', 'zypper', 'emerge', 'pacman', 'crew'],
   freebsd: ['pkg', 'pkg_add'],
   sunos: ['pkg'],
-  netbsd: ['none']
+  netbsd: ['none'],
+  win64: ['choco'],
+  shell: ['powershell'],
 };
 
 function sysManager(reject) {
@@ -122,7 +124,7 @@ export const installer = Sys.installer = function (application) {
 
     if (cmd != 'powershell') {
       let input = '';
-      if (cmd.includes('choco') && process.platform == 'wind32') {
+      if (cmd.includes('choco') && process.platform == 'win32') {
         cmd = where('choco');
         system = [cmd].concat(system);
         cmd = join(__dirname, 'bin', 'sudo.bat');
@@ -130,7 +132,7 @@ export const installer = Sys.installer = function (application) {
 
       const proc = spawn(cmd, system, {
         stdio: 'pipe',
-        shell: true
+        //shell: true
       });
 
       proc.on('error', (err) => {
