@@ -135,10 +135,6 @@ export const installer = Sys.installer = function (application) {
         //shell: true
       });
 
-      proc.on('error', (err) => {
-        return reject(err);
-      });
-
       proc.on('close', () => {
         return resolve(installOutput);
       });
@@ -153,11 +149,11 @@ export const installer = Sys.installer = function (application) {
           proc.kill('SIGKILL');
           return resolve('For testing only, no package installed.');
         }
-
+        /*
         if (input.includes('The package was not found') || input.includes('Unable to locate package') || input.includes('is denied') || input.includes('Throwing error')) {
           proc.kill('SIGKILL');
           return reject(input);
-        }
+        }*/
       });
 
       proc.stderr.on('data', (data) => {
