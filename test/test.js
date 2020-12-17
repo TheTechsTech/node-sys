@@ -115,7 +115,7 @@ describe('Method: `installer` for platform set to `other`', function () {
 
 describe('Method: `installer` install packages `unzip` and `nano`', function () {
   it('should return on successful install of multiple packages or print error on unknown platform', function (done) {
-    let multi = ['unzip', 'nano', 'node-fake-tester', '--noop'];
+    let multi = ['unzip', 'nano', 'fake-js', '--noop'];
 
     installer(multi)
       .then(function (data) {
@@ -144,7 +144,7 @@ describe('Method: `installer` install packages `unzip` and `nano`, platform set 
   });
 
   it('should return on successful install of multiple packages or print error on unknown platform, platform set to `win64`', function (done) {
-    let multi = ['unzip', 'nano', 'node-fake-tester'];
+    let multi = ['unzip', 'nano', 'fake-js'];
 
     installer(multi)
       .then(function (data) {
@@ -181,12 +181,45 @@ describe('Method: `installer` install packages `unzip`, platform set to `shell`'
   });
 });
 
+describe('Method: `spawning`', function () {
+  // save original process.platform
+  before(function () {
+    this.originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform');
+    // redefine process.platform
+    Object.defineProperty(process, 'platform', {
+      value: 'win64'
+    });
+  });
+  // restore original process.platform
+  after(function () {
+    Object.defineProperty(process, 'platform', this.originalPlatform);
+  });
+
+  it('should return on successful install of multiple packages with different output from `progress`, platform set to `win64`', function (done) {
+    let multi = ['unzip', 'nano', 'fake-js'];
+    installer(multi, (object) => {
+      expect(object).to.be.a('object');
+      expect(object.handle).to.be.instanceOf(Object);
+      expect(object.output).to.be.a('string');
+      return 'hello world';
+    })
+      .then(function (data) {
+        expect(data).to.be.a('string');
+        expect(data).to.equal('For testing only. hello world');
+        done();
+      })
+      .catch(function (err) {
+        expect(err).to.be.empty;
+        done();
+      });
+  });
+});
+
 describe('Method: `where`', function () {
   it('should return null/empty for executable not found', function (done) {
-    let found = where('node-fake-tester');
+    let found = where('fake-js');
     expect(found).to.be.null;
     done();
-
   });
 });
 
@@ -200,5 +233,6 @@ describe('Function: `Sys`', function () {
     expect(Sys).itself.to.respondTo('installer');
     expect(Sys).itself.to.respondTo('where');
     expect(Sys).itself.to.respondTo('packager');
+    expect(Sys).itself.to.respondTo('spawning');
   });
 });

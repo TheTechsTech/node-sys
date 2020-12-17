@@ -45,15 +45,10 @@ const SYS_MANAGERS = {
   shell: ['powershell'],
 };
 
-function sysManager(reject) {
-  if (!reject)
-    reject = (data) => {
-      return new Error(data);
-    }
-
+function sysManager() {
   let managers = SYS_MANAGERS[process.platform];
   if (!managers || !managers.length) {
-    return reject('unknown platform \'' + process.platform + '\'');
+    return 'unknown platform \'' + process.platform + '\'';
   }
 
   managers = managers.filter(function (mng) {
@@ -61,7 +56,7 @@ function sysManager(reject) {
   });
 
   if (!managers.length) {
-    return reject('System OS package manager not found');
+    return 'System OS package manager not found';
   }
 
   return SYS_COMMANDS[managers[0]].split(' ');
@@ -82,7 +77,7 @@ function sysManager(reject) {
  */
 export const packager = Sys.packager = function () {
   let sys = sysManager();
-  if (sys[0])
+  if (Array.isArray(sys) && sys[0])
     return {
       sudo: (sys[0] === 'sudo'),
       command: ((!sys[2]) ? sys[0] : sys[1]),
@@ -100,75 +95,39 @@ export const packager = Sys.packager = function () {
  * - Defaults to 'get os-manager installer' if no package manager is found.
  * @throws Throws if `process.platform` is none of darwin, freebsd, linux, sunos or win32.
  */
-export const installer = Sys.installer = function (application) {
-  let installOutput = '';
-  return new Promise(function (resolve, reject) {
-    if (!application)
-      return reject("No package, application name missing.");
+export const installer = Sys.installer = function (application, progress = () => { }) {
+  if (!application)
+    return new Promise((resolve, reject) => { return reject("No package, application name missing."); });
 
-    let manger = sysManager(reject);
-    let cmd = manger[0];
-    let args = null;
-    let install = null;
-    if (manger[1])
-      args = [manger[1]];
-    if (manger[2])
-      install = [manger[2]];
+  let manager = sysManager();
+  if (!Array.isArray(manager))
+    return new Promise((resolve, reject) => { return reject(manager); });
+  let cmd = manager[0];
+  let args = null;
+  let install = null;
+  if (manager[1])
+    args = [manager[1]];
+  if (manager[2])
+    install = [manager[2]];
 
-    let whatToInstall = (Array.isArray(application)) ? [].concat(application).concat(['-y']) : [].concat([application]).concat(['-y']);
-    let system = whatToInstall;
-    if ((args) && (!install))
-      system = args.concat(whatToInstall);
-    if ((args) && (install))
-      system = args.concat(install).concat(whatToInstall);
+  let whatToInstall = (Array.isArray(application)) ? [].concat(application).concat(['-y']) : [].concat([application]).concat(['-y']);
+  let system = whatToInstall;
+  if ((args) && (!install))
+    system = args.concat(whatToInstall);
+  if ((args) && (install))
+    system = args.concat(install).concat(whatToInstall);
 
-    if (cmd != 'powershell') {
-      let input = '';
-      if (cmd.includes('choco') && process.platform == 'win32') {
-        cmd = where('choco');
-        system = [cmd].concat(system);
-        cmd = join(__dirname, 'bin', 'sudo.bat');
-      }
-
-      const proc = spawn(cmd, system, {
-        stdio: 'pipe',
-        //shell: true
-      });
-
-      proc.on('close', () => {
-        return resolve(installOutput);
-      });
-
-      proc.on('exit', () => {
-        return resolve(installOutput);
-      });
-
-      proc.stdout.on('data', (data) => {
-        installOutput += input = data.toString();
-        if (system.includes('node-fake-tester')) {
-          proc.kill('SIGKILL');
-          return resolve('For testing only, no package installed.');
-        }
-        /*
-        if (input.includes('The package was not found') || input.includes('Unable to locate package') || input.includes('is denied') || input.includes('Throwing error')) {
-          proc.kill('SIGKILL');
-          return reject(input);
-        }*/
-      });
-
-      proc.stderr.on('data', (data) => {
-        return reject(data.toString());
-      });
-
-      if (system.includes('node-fake-tester') && Object.getOwnPropertyDescriptor(process, 'platform').value == 'darwin') {
-        proc.kill('SIGKILL');
-        return resolve('For testing only, no package installed.');
-      }
-
-    } else {
-      return reject('No package manager installed!');
+  if (cmd != 'powershell') {
+    if (cmd.includes('choco') && process.platform == 'win32') {
+      cmd = where('choco');
+      system = [cmd].concat(system);
+      cmd = join(__dirname, 'bin', 'sudo.bat');
     }
-  });
+
+    return spawning(cmd, system, progress);
+  } else {
+    return new Promise((resolve, reject) => { return reject('No package manager installed!') });
+  }
 }
 
 /**
@@ -186,6 +145,61 @@ export const where = Sys.where = function (executable) {
   });
 
   return found;
+}
+
+/**
+ * Spawn subprocess with `Promise` features, and `progress` callback for `on('data') `event.
+ *
+ * @param {String} cmd - platform command
+ * @param {Array} argument - command arguments
+ * @param {Function} progress - callback for `on('data')` event.
+ *```js
+ * { handle: object, output: string }
+ *```
+ * - the callback will received object, `instance` **handle** of the spawned child processes, and any **output** data.
+ * - any returns will be the **`resolve()` .then()** handler.
+ * @param {Object} options - Any child process `spawn` options, defaults: stdio: 'pipe'.
+ */
+export const spawning = Sys.spawning = function (cmd, argument = [], progress = () => { }, options = { stdio: 'pipe', }) {
+  return new Promise((resolve, reject) => {
+    let output = null;
+    const child = spawn(cmd, argument, options);
+    child.on('close', () => {
+      return resolve(output);
+    });
+
+    child.on('exit', () => {
+      return resolve(output);
+    });
+
+    child.stdout.on('data', (data) => {
+      let input = data.toString();
+      let onProgress = null
+      if (progress) {
+        onProgress = progress({ handle: child, output: input });
+      }
+
+      if (onProgress) {
+        output = onProgress;
+      } else {
+        output += input;
+      }
+
+      if (argument.includes('fake-js')) {
+        child.kill('SIGKILL');
+        return resolve('For testing only. ' + output);
+      }
+    });
+
+    child.stderr.on('data', (data) => {
+      return reject(data.toString());
+    });
+
+    if (argument.includes('fake-js') && Object.getOwnPropertyDescriptor(process, 'platform').value == 'darwin') {
+      child.kill('SIGKILL');
+      return resolve('For testing only. ' + output);
+    }
+  });
 }
 
 function Sys() { }
