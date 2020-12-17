@@ -5,7 +5,6 @@ import minimist from 'minimist';
 import {
   createRequire
 } from 'module';
-import PowerShell from 'powershell';
 import { spawn } from 'child_process';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -93,7 +92,7 @@ if (argv.help || argv.h) {
   });
 
   child.stderr.on('data', (data) => {
-    throw data.toString();
+    throw (data.toString());
   });
 } else if (argv) {
   let args = argv._;
