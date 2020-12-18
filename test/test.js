@@ -275,6 +275,18 @@ describe('Method: `spawning`', function () {
       });
   });
 
+  it('should return on successful install with output with options `null`', function (done) {
+    spawning('echo', ['1'], { shell: true })
+      .then(function (data) {
+        expect(data).to.be.a('string');
+        done();
+      })
+      .catch(function (err) {
+        expect(err).to.be.empty;
+        done();
+      });
+  });
+
   it('should catch error on throw from `onprogress`', function (done) {
     spawning('echo', [''], {
       stdio: 'pipe',
@@ -291,11 +303,12 @@ describe('Method: `spawning`', function () {
   });
 
   it('should return on successful `Sudo` run and catch any exceptions', function (done) {
-    spawning((process.platform == 'win32' ? 'dir' : 'ls'), ['..'], {
+    spawning((process.platform == 'win32' ? 'dir' : 'ls'), ['..'], null, {
       stdio: 'pipe',
       shell: true,
       sudo: true,
       onerror: (err) => { return 'testing: ' + err; },
+      onprogress: () => { }
       // onmessage: (data) => { console.log('messaging: ' + data); },
     })
       .then(function () {
