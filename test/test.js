@@ -217,18 +217,20 @@ describe('Method: `installer` and progress callback, platform set to `win64`', f
 
 describe('Method: `spawning`', function () {
   it('should return on successful install with output from `progress`', function (done) {
-    spawning('echo', [''], (object) => {
+    let cmd = process.platform == 'win32' ? 'echo | set /p dummyName=1' : 'printf 1';
+    spawning(cmd, [], (object) => {
       expect(object).to.be.a('object');
       expect(object.handle).to.be.instanceOf(Object);
       expect(object.output).to.be.a('string');
-      return 'hello';
+      return object.output + ' hello';
     }, { stdio: 'pipe', shell: true })
       .then(function (data) {
         expect(data).to.be.a('string');
-        expect(data).to.equal('hello');
+        expect(data).to.equal('1 hello');
         done();
       })
       .catch(function (err) {
+        console.log(err);
         expect(err).to.be.empty;
         done();
       });
@@ -253,7 +255,7 @@ describe('Method: `spawning`', function () {
   });
 
   it('should return on successful install with output from `onprogress`', function (done) {
-    spawning('echo', [''], {
+    spawning('echo', [''], null, {
       stdio: 'pipe',
       shell: true,
       onerror: (err) => { return 'testing: ' + err; },
