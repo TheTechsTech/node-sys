@@ -1,6 +1,6 @@
 import chai from 'chai';
 import Sys from '../index.js';
-import { packager, installer, where } from '../index.js';
+import { packager, installer, where, spawning } from '../index.js';
 
 const expect = chai.expect;
 
@@ -181,7 +181,7 @@ describe('Method: `installer` install packages `unzip`, platform set to `shell`'
   });
 });
 
-describe('Method: `spawning`', function () {
+describe('Method: `installer` and progress callback, platform set to `win64`', function () {
   // save original process.platform
   before(function () {
     this.originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform');
@@ -210,6 +210,44 @@ describe('Method: `spawning`', function () {
       })
       .catch(function (err) {
         expect(err).to.be.empty;
+        done();
+      });
+  });
+});
+
+describe('Method: `spawning`', function () {
+  it('should return on successful install with output from `progress`', function (done) {
+    spawning('echo', [''], (object) => {
+      expect(object).to.be.a('object');
+      expect(object.handle).to.be.instanceOf(Object);
+      expect(object.output).to.be.a('string');
+      return 'hello';
+    }, { stdio: 'pipe', shell: true })
+      .then(function (data) {
+        expect(data).to.be.a('string');
+        expect(data).to.equal('hello');
+        done();
+      })
+      .catch(function (err) {
+        expect(err).to.be.empty;
+        done();
+      });
+  });
+
+  it('should catch error on throw from `progress`', function (done) {
+    spawning('echo', [''], () => {
+      throw 'hello';
+    }, { stdio: 'pipe', shell: true })
+      .catch(function (err) {
+        expect(err).to.equal('hello');
+        done();
+      });
+  });
+
+  it('should catch and instant of `Error` on any spawn exceptions', function (done) {
+    spawning('xxxxx', [''], null, { stdio: 'pipe', })
+      .catch(function (err) {
+        expect(err).to.be.instanceof(Error);
         done();
       });
   });

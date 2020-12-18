@@ -1,7 +1,7 @@
 {
   "name": "node-sys",
   "version": "1.0.4",
-  "description": "Universal package installer, get the command for managing packages, or auto install any package, using one command for all platforms. Automate the installation of macOS Brew, and Windows Chocolatey package managers.",
+  "description": "Universal package installer, get the command for managing packages, or auto install any package, using one command for all platforms. Automate the installation of macOS Brew, and Windows Chocolatey package managers. A promisify child process of spawn.",
   "type": "module",
   "main": "index.js",
   "bin": {
@@ -36,15 +36,17 @@
     "emerge",
     "zypper",
     "nix",
-    "cross",
-    "platform",
     "cross-platform",
     "package",
     "manager",
     "installer",
     "macOS",
     "windows",
-    "linux"
+    "linux",
+    "spawn",
+    "spawning",
+    "child_process",
+    "promisify"
   ],
   "author": "l. stubbs <technoexpressnet@gmail.com>",
   "contributors": [

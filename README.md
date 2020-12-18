@@ -10,6 +10,8 @@ This is mainly focused on initial installation of an Node JS packages that needs
 
 `node-sys` will try to find which system packaging is installed for the given `process.platform`. If no system package manager is found, `'No package manager found!'` is returned.
 
+A `spawning` cross-platform version of Node's child_process.`spawn` that returns a **Promise**.
+
 ## Install
 
 ```sh
@@ -53,6 +55,23 @@ installer('vim')
     console.log(err);
 });
 ```
+
+## API - spawning(command, arguments, progress, options)
+
+`spawning` takes an additional argument, `progress`, its [`options`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options) are the same as those of `child_process.spawn`.
+
+* `progress`: callback handler for `stdout.on('data')` events.
+
+It returns a promise whose result will be any output or any data return in the progress callback.
+*The progress callback will receive an object with these properties:*
+
+* `handle:` *Object* - Spawned child process instance handler.
+  * Access the child process object.
+
+* `output:` *String* - Output from stdout.
+  * Output can be altered and if returned will replace the otherwise resolved result.
+
+If there's an error running the child process, received data on stderr, or errors in progress callback, `spawning` rejects the returned promise.
 
 ### CLI Usage
 

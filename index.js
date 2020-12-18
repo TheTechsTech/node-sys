@@ -164,6 +164,10 @@ export const spawning = Sys.spawning = function (cmd, argument = [], progress = 
   return new Promise((resolve, reject) => {
     let output = null;
     const child = spawn(cmd, argument, options);
+    child.on('error', (data) => {
+      return reject(data);
+    });
+
     child.on('close', () => {
       return resolve(output);
     });
@@ -175,13 +179,17 @@ export const spawning = Sys.spawning = function (cmd, argument = [], progress = 
     child.stdout.on('data', (data) => {
       let input = data.toString();
       let onProgress = null
-      if (progress) {
-        onProgress = progress({ handle: child, output: input });
+      try {
+        if (progress) {
+          onProgress = progress({ handle: child, output: input });
+        }
+      } catch (e) {
+        return reject(e.toString());
       }
 
-      if (onProgress) {
+      if (onProgress && onProgress != null) {
         output = onProgress;
-      } else {
+      } else if (input != null) {
         output += input;
       }
 
