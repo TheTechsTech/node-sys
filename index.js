@@ -177,7 +177,7 @@ function isFunction(value) {
  // * onmessage: callable, // callback for `on('message')` event.
  *```
  */
-export const spawning = Sys.spawning = function (command, argument = [], progressOptions = null, options = { stdio: 'pipe', }) {
+export const spawning = Sys.spawning = function (command, argument, progressOptions, options) {
   return new Promise((resolve, reject) => {
     options = options || {
       stdio: 'pipe',
@@ -191,7 +191,7 @@ export const spawning = Sys.spawning = function (command, argument = [], progres
     if (typeof progressOptions == 'object' && !isFunction(progressOptions)) {
       options = Object.assign(options, progressOptions);
       progress = options.onprogress || null;
-    } else if (!isFunction(progressOptions)) {
+    } else if (isFunction(options.onprogress)) {
       progress = options.onprogress || null;
     }
 
