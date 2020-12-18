@@ -56,13 +56,19 @@ installer('vim')
 });
 ```
 
-## API - spawning(command, arguments, progress, options)
+## API - spawning(command, arguments, progressOptions, options)
 
-`spawning` takes an additional argument, `progress`, its [`options`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options) are the same as those of `child_process.spawn`.
+`Spawning` takes an additional argument, `progressOptions`, its [`options`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options) are the same as those of `child_process.spawn` plus:
 
-* `progress`: callback handler for `stdout.on('data')` events.
+```js
+ sudo: boolean, // run as administrator
+ onerror: callable, // callback for `stderr.on('data')` event.
+ onprogress: callable, // callback for `stdout.on('data')` event.
+ // onmessage: callable, // callback for send `on('message')` event.
+ ```
 
-It returns a promise whose result will be any output or any data return in the progress callback.
+`Spawning` returns a promise whose result will be any output or any data return in the progress callback.
+
 *The progress callback will receive an object with these properties:*
 
 * `handle:` *Object* - Spawned child process instance handler.

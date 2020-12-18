@@ -1,6 +1,6 @@
 {
   "name": "node-sys",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Universal package installer, get the command for managing packages, or auto install any package, using one command for all platforms. Automate the installation of macOS Brew, and Windows Chocolatey package managers. A promisify child process of spawn.",
   "type": "module",
   "main": "index.js",

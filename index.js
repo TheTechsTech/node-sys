@@ -148,28 +148,78 @@ export const where = Sys.where = function (executable) {
 }
 
 /**
- * Spawn subprocess with `Promise` features, and `progress` callback for `on('data') `event.
+ * Determine if a value is a Function
  *
- * @param {String} cmd - platform command
+ * @param {Object} value The value to test
+ * @returns {boolean} True if value is a Function, otherwise false
+ */
+function isFunction(value) {
+  return Object.prototype.toString.call(value) === '[object Function]';
+}
+
+/**
+ * Spawn subprocess with `Promise` features, and `progress` callback for `stdout.on('data') `event.
+ *
+ * @param {String} command - platform command
  * @param {Array} argument - command arguments
- * @param {Function} progress - callback for `on('data')` event.
+ * @param {Function|Object} progressOptions - either callback for `stdout.on('data')` event or spawn options.
  *```js
  * { handle: object, output: string }
  *```
- * - the callback will received object, `instance` **handle** of the spawned child processes, and any **output** data.
+ * - the callback will received an object, child process `instance` **handle**, and any **output** data.
  * - any returns will be the **`resolve()` .then()** handler.
  * @param {Object} options - Any child process `spawn` options, defaults: stdio: 'pipe'.
+ * - Additionally:
+ *```js
+ * sudo: boolean, // run as administrator
+ * onerror: callable, // callback for `stderr.on('data')` event.
+ * onprogress: callable, // callback for `stdout.on('data')` event.
+ // * onmessage: callable, // callback for `on('message')` event.
+ *```
  */
-export const spawning = Sys.spawning = function (cmd, argument = [], progress = () => { }, options = { stdio: 'pipe', }) {
+export const spawning = Sys.spawning = function (command, argument = [], progressOptions = null, options = { stdio: 'pipe', }) {
   return new Promise((resolve, reject) => {
+    options = options || {
+      stdio: 'pipe',
+      sudo: false,
+      onerror: null,
+      onprogress: null,
+      // onmessage: null,
+    };
+
+    let progress = progressOptions;
+    if (typeof progressOptions == 'object' && !isFunction(progressOptions)) {
+      options = Object.assign(options, progressOptions);
+      progress = options.onprogress || null;
+    }
+
+    let err = null;
     let output = null;
-    const child = spawn(cmd, argument, options);
+    let sudo = options.sudo || false;
+    let onerror = options.onerror || null;
+    //let onmessage = options.onmessage || null;
+
+    delete options.sudo;
+    delete options.onerror;
+    delete options.onprogress;
+    //delete options.onmessage;
+
+    if (sudo) {
+      argument = [command].concat(argument);
+      command = (process.platform == 'win32') ? join(__dirname, 'bin', 'sudo.bat') : 'sudo';
+    }
+
+    const child = spawn(command, argument, options);
     child.on('error', (data) => {
       return reject(data);
     });
 
-    child.on('close', () => {
-      return resolve(output);
+    child.on('close', (code) => {
+      if (code === 0) {
+        return resolve(output);
+      }
+
+      return reject(err, code);
     });
 
     child.on('exit', () => {
@@ -180,7 +230,7 @@ export const spawning = Sys.spawning = function (cmd, argument = [], progress = 
       let input = data.toString();
       let onProgress = null
       try {
-        if (progress) {
+        if (isFunction(progress)) {
           onProgress = progress({ handle: child, output: input });
         }
       } catch (e) {
@@ -200,9 +250,19 @@ export const spawning = Sys.spawning = function (cmd, argument = [], progress = 
     });
 
     child.stderr.on('data', (data) => {
-      return reject(data.toString());
-    });
+      err = data.toString();
+      if (isFunction(onerror)) {
+        err = onerror(err);
+      }
 
+      return reject(err);
+    });
+    /*
+        child.on('message', (data) => {
+          if (isFunction(onmessage))
+            onmessage(data);
+        });
+    */
     if (argument.includes('fake-js') && Object.getOwnPropertyDescriptor(process, 'platform').value == 'darwin') {
       child.kill('SIGKILL');
       return resolve('For testing only. ' + output);

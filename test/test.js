@@ -251,6 +251,61 @@ describe('Method: `spawning`', function () {
         done();
       });
   });
+
+  it('should return on successful install with output from `onprogress`', function (done) {
+    spawning('echo', [''], {
+      stdio: 'pipe',
+      shell: true,
+      onerror: (err) => { return 'testing: ' + err; },
+      onprogress: (object) => {
+        expect(object).to.be.a('object');
+        expect(object.handle).to.be.instanceOf(Object);
+        expect(object.output).to.be.a('string');
+        return 'hello';
+      },
+    })
+      .then(function (data) {
+        expect(data).to.be.a('string');
+        expect(data).to.equal('hello');
+        done();
+      })
+      .catch(function (err) {
+        expect(err).to.be.empty;
+        done();
+      });
+  });
+
+  it('should catch error on throw from `onprogress`', function (done) {
+    spawning('echo', [''], {
+      stdio: 'pipe',
+      shell: true,
+      onerror: (err) => { return 'testing: ' + err; },
+      onprogress: () => {
+        throw 'hello';
+      },
+    })
+      .catch(function (err) {
+        expect(err).to.equal('hello');
+        done();
+      });
+  });
+
+  it('should return on successful `Sudo` run and catch any exceptions', function (done) {
+    spawning((process.platform == 'win32' ? 'dir' : 'ls'), ['..'], {
+      stdio: 'pipe',
+      shell: true,
+      sudo: true,
+      onerror: (err) => { return 'testing: ' + err; },
+      // onmessage: (data) => { console.log('messaging: ' + data); },
+    })
+      .then(function () {
+        done();
+      })
+      .catch(function (err) {
+        expect(err).to.contains('testing: ');
+        done();
+      });
+  });
 });
 
 describe('Method: `where`', function () {
