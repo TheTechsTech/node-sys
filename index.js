@@ -192,7 +192,7 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
       options = Object.assign(options, progressOptions);
       progress = options.onprogress || null;
     } else if (isFunction(options.onprogress)) {
-      progress = options.onprogress || null;
+      progress = options.onprogress;
     }
 
     let err = null;
