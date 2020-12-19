@@ -90,12 +90,17 @@ export const packager = Sys.packager = function () {
 /**
  * Install package using the system package manager command.
  *
- * @returns {string} Output of spawn command.
+ * @param {String|Array} application package to install.
+ * @param {Function} progress callback for any output doing installation.
+ * - Any value returned in `callback` will be the final resolved result.
+ *
+ * @returns {Promise} Promise Output of spawn command.
  * - E.g. 'sudo apg-get install' for Debian based systems.
  * - Defaults to 'get os-manager installer' if no package manager is found.
- * @throws Throws if `process.platform` is none of darwin, freebsd, linux, sunos or win32.
+ * @rejects On any spawn error, or if `process.platform` is none of
+ * darwin, freebsd, linux, sunos or win32.
  */
-export const installer = Sys.installer = function (application, progress = () => { }) {
+export const installer = Sys.installer = function (application, progress) {
   if (!application)
     return new Promise((resolve, reject) => { return reject("No package, application name missing."); });
 
@@ -114,7 +119,7 @@ export const installer = Sys.installer = function (application, progress = () =>
   let system = whatToInstall;
   if ((args) && (!install))
     system = args.concat(whatToInstall);
-  if ((args) && (install))
+  else if ((args) && (install))
     system = args.concat(install).concat(whatToInstall);
 
   if (cmd != 'powershell') {
