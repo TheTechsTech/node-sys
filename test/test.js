@@ -321,6 +321,21 @@ describe('Method: `spawning`', function () {
         done();
       });
   });
+
+  it('should return on successful from `onprogress`', function (done) {
+    spawning((process.platform == 'win32' ? 'dir' : 'ls'), ['..'], null, {
+      stdio: 'pipe',
+      shell: true,
+      onprogress: (object) => {
+        expect(object.output).to.be.a('string');
+        return 'done';
+      }
+    })
+      .then(function (data) {
+        expect(data).to.equal('done');
+        done();
+      });
+  });
 });
 
 describe('Method: `where`', function () {

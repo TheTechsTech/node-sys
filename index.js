@@ -188,12 +188,11 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
     };
 
     let progress = progressOptions;
-    if (typeof progressOptions == 'object' && !isFunction(progressOptions)) {
+    if (typeof progressOptions == 'object' && !isFunction(progressOptions))
       options = Object.assign(options, progressOptions);
-      progress = options.onprogress || null;
-    } else if (isFunction(options.onprogress)) {
+
+    if (isFunction(options.onprogress))
       progress = options.onprogress;
-    }
 
     let err = null;
     let output = null;
