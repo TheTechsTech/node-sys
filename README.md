@@ -62,9 +62,10 @@ installer('vim')
 
 ```js
  sudo: boolean, // run as administrator
+ fork: string, //  execute an additional module, of Node Js process `fork` IPC communication channel.
  onerror: callable, // callback for `stderr.on('data')` event.
  onprogress: callable, // callback for `stdout.on('data')` event.
- // onmessage: callable, // callback for send `on('message')` event.
+ onmessage: callable, // callback for `on('message')` for `fork` event.
  ```
 
 `Spawning` returns a promise whose result will be any output or any data return in the progress callback.
@@ -76,6 +77,9 @@ installer('vim')
 
 * `output:` *String* - Output from stdout.
   * Output can be altered and if returned will replace the otherwise resolved result.
+
+* `fork:` *Object* - An additional [forked](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options) Node Js process handler, IPC communication channel.
+  * Execute additional processing base off of sub child process output, with module a script.
 
 If there's an error running the child process, received data on stderr, or errors in progress callback, `spawning` rejects the returned promise.
 

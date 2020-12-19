@@ -1,7 +1,7 @@
 'use strict';
 
 import which from 'which';
-import { spawn } from 'child_process';
+import { spawn, fork } from 'child_process';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -176,10 +176,11 @@ function isFunction(value) {
  * @param {Object} options - Any child process `spawn` options, defaults: stdio: 'pipe'.
  * - Additionally:
  *```js
- * sudo: boolean, // run as administrator
+ * sudo: boolean, // run as administrator.
+ * fork: string, //  execute an additional module, a child_process.`fork` IPC communication channel.
  * onerror: callable, // callback for `stderr.on('data')` event.
  * onprogress: callable, // callback for `stdout.on('data')` event.
- // * onmessage: callable, // callback for `on('message')` event.
+ * onmessage: callable, // callback for `on('message')` for `fork` event.
  *```
  */
 export const spawning = Sys.spawning = function (command, argument, progressOptions, options) {
@@ -187,9 +188,10 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
     options = options || {
       stdio: 'pipe',
       sudo: false,
+      fork: null,
       onerror: null,
       onprogress: null,
-      // onmessage: null,
+      onmessage: null,
     };
 
     let progress = progressOptions;
@@ -202,25 +204,31 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
     let error = null;
     let output = null;
     let sudo = options.sudo || false;
+    let forking = options.fork || null;
     let onerror = options.onerror || null;
-    //let onmessage = options.onmessage || null;
+    let onmessage = options.onmessage || null;
+
+    if (typeof forking == 'string')
+      var forked = fork(forking);
 
     delete options.sudo;
+    delete options.fork;
     delete options.onerror;
     delete options.onprogress;
-    //delete options.onmessage;
+    delete options.onmessage;
 
     if (sudo) {
       argument = [command].concat(argument);
       command = (process.platform == 'win32') ? join(__dirname, 'bin', 'sudo.bat') : 'sudo';
-    }
+    };
 
-    const child = spawn(command, argument, options);
-    child.on('error', (data) => {
+    const spawned = spawn(command, argument, options);
+    spawned.on('error', (data) => {
+
       return reject(data);
     });
 
-    child.on('close', (code) => {
+    spawned.on('close', (code) => {
       if (code === 0) {
         return resolve(output);
       }
@@ -228,49 +236,48 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
       return reject(error, code);
     });
 
-    child.on('exit', () => {
+    spawned.on('exit', () => {
+      if (forked)
+        setTimeout(() => {
+          forked.kill();
+        }, 1000);
+
       return resolve(output);
     });
 
-    child.stdout.on('data', (data) => {
+    spawned.stdout.on('data', (data) => {
       let input = data.toString();
-      let onProgress = null
+      output += input;
       try {
         if (isFunction(progress)) {
-          onProgress = progress({ handle: child, output: input });
+          output = progress({ handle: spawned, output: input, fork: forked }) || output;
         }
       } catch (e) {
         return reject(e.toString());
       }
 
-      if (onProgress && onProgress != null) {
-        output = onProgress;
-      } else if (input != null) {
-        output += input;
-      }
-
       if (argument.includes('fake-js')) {
-        child.kill('SIGKILL');
+        spawned.kill('SIGKILL');
         return resolve('For testing only. ' + output);
       }
     });
 
-    child.stderr.on('data', (data) => {
+    spawned.stderr.on('data', (data) => {
       let err = data.toString();
-      if (isFunction(onerror))
-        /* c8 ignore next */
-        error = onerror(err) || err;
-      else
-        error += err;
+      error += err;
+      if (isFunction(onerror))/* c8 ignore next */
+        error = onerror(err) || error;
     });
-    /*
-        child.on('message', (data) => {
-          if (isFunction(onmessage))
-            onmessage(data);
-        });
-    */
+
+    if (forked) {
+      forked.on('message', (data) => {
+        if (isFunction(onmessage))
+          onmessage(data);
+      });
+    }
+
     if (argument.includes('fake-js') && Object.getOwnPropertyDescriptor(process, 'platform').value == 'darwin') {
-      child.kill('SIGKILL');
+      spawned.kill('SIGKILL');
       return resolve('For testing only. ' + output);
     }
   });

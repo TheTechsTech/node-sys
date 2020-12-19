@@ -311,7 +311,6 @@ describe('Method: `spawning`', function () {
       sudo: true,
       onerror: (err) => { return 'testing: ' + err; },
       onprogress: () => { }
-      // onmessage: (data) => { console.log('messaging: ' + data); },
     })
       .then(function () {
         done();
@@ -333,6 +332,27 @@ describe('Method: `spawning`', function () {
     })
       .then(function (data) {
         expect(data).to.equal('done');
+        done();
+      });
+  });
+
+  it('should receive message from `fork` process', function (done) {
+    spawning((process.platform == 'win32' ? 'dir' : 'ls'), ['..'], null, {
+      stdio: 'pipe',
+      shell: true,
+      fork: 'test/sub.cjs',
+      onprogress: (object) => {
+        expect(object.fork).to.be.instanceOf(Object);
+        object.fork.send('hello');
+        return { fork: object.fork, output: 'done' };
+      },
+      onmessage: (data) => {
+        expect(data.hello).to.equal('world');
+      },
+    })
+      .then(function (data) {
+        expect(data.output).to.equal('done');
+        expect(data.fork).to.be.instanceOf(Object);
         done();
       });
   });
