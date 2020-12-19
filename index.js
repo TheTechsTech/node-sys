@@ -194,7 +194,7 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
     if (isFunction(options.onprogress))
       progress = options.onprogress;
 
-    let err = null;
+    let error = null;
     let output = null;
     let sudo = options.sudo || false;
     let onerror = options.onerror || null;
@@ -220,7 +220,7 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
         return resolve(output);
       }
 
-      return reject(err, code);
+      return reject(error, code);
     });
 
     child.on('exit', () => {
@@ -251,12 +251,12 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
     });
 
     child.stderr.on('data', (data) => {
-      err = data.toString();
-      if (isFunction(onerror)) {
-        err = onerror(err);
-      }
-
-      return reject(err);
+      let err = data.toString();
+      if (isFunction(onerror))
+        /* c8 ignore next */
+        error = onerror(err) || err;
+      else
+        error += err;
     });
     /*
         child.on('message', (data) => {
