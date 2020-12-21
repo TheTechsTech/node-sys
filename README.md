@@ -10,7 +10,12 @@ This is mainly focused on initial installation of an Node JS packages that needs
 
 `node-sys` will try to find which system packaging is installed for the given `process.platform`. If no system package manager is found, `'No package manager found!'` is returned.
 
-A `spawning` cross-platform version of Node's child_process.`spawn` that returns a **Promise**.
+A `spawning` cross-platform version of Node's child_process.`spawn` that returns a **Promise**, with additions:
+
+- easily execute as administrator, on `Windows` a pop up **UAC** window will appear.
+- pass callbacks, for `stderr` and `stdout` **on** `data` events, any _returns_ will be the **reject/resolve** result.
+- `fork` another **script**, a _Node Js_ module instance, for additional sub processing base on `stderr` or `stdout` events.
+  - pass additional callback for the `message` event.
 
 ## Install
 
@@ -42,7 +47,7 @@ console.log('To fully install a `pandoc` package run: ' + sys.installer + ' pand
 
 ### Install `vim` package onto host, using system's default package manager
 
-* Returns a `Promise`
+- *Returns* a `Promise`
 
 ```js
 import { installer } from  'node-sys';
@@ -63,7 +68,7 @@ installer('vim', onprogress)
 });
 ```
 
-## API - `spawning`(command, arguments, progressOptions, options)
+### API - `spawning`(command, arguments, progressOptions, options)
 
 `import { spawning } from 'node-sys';`
 
@@ -81,34 +86,45 @@ installer('vim', onprogress)
 
 *The progress callback will receive an object with these properties:*
 
-* `spawn:` *Object* - Spawned child process instance handle.
-  * Access the child process object.
+- `spawn:` *Object* - Spawned child process instance handle.
+  - Access the child process object.
 
-* `output:` *String* - Output from stdout.
-  * Output can be altered and if returned will replace the otherwise resolved result.
+- `output:` *String* - Output from stdout.
+  - Output can be altered and if returned will replace the otherwise resolved result.
 
-* `fork:` *Object* - An additional [forked](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options) Node Js process handle, IPC communication channel.
-  * Execute additional processing base off of sub child process output, with module a script.
+- `fork:` *Object* - An additional [forked](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options) Node Js process handle, IPC communication channel.
+  - Execute additional processing base off of sub child process output, with module a script.
 
 If there's an error running the child process, received data on stderr, or errors in progress callback, `spawning` rejects the returned promise.
 
-### General type `check` functions
+### General *`strict`* type *`check`* functions
 
 ```js
 import {
-  isArray,
-  isUndefined,
-  isBuffer,
-  isArrayBuffer,
-  isString,
-  isNumber,
-  isObject,
-  isObjectOnly,
-  isBlob,
-  isFunction,
-  isDate,
-  isStream
+  isArray, // True if value is an Array, otherwise false.
+  isUndefined, // True if the value is undefined, otherwise false.
+  isBuffer, // True if value is a Buffer, otherwise false.
+  isArrayBuffer, // True if value is an ArrayBuffer, otherwise false.
+  isString, // True if value is a String, otherwise false.
+  isNumber, // True if value is a Number, otherwise false.
+  isObject, // True if value is an Object, otherwise false.
+  isObjectOnly, // True if value is a `Object` only, otherwise false, not an Array, Function, or any other type.
+  isBlob, // True if value is a Blob, otherwise false.
+  isFunction, // True if value is a Function, otherwise false.
+  isDate, // True if value is a Date, otherwise false.
+  isStream //True if value is a Stream, otherwise false
 } from 'node-sys';
+```
+
+### Find any executable
+
+The `sync` from [node-which](https://github.com/npm/node-which) has been exported to `where`.
+
+```js
+import { where } from 'node-sys';
+
+// Like the unix `which` utility, will be a `string`, or `null` for not found.
+let found = where('node');
 ```
 
 ### CLI Usage
@@ -133,8 +149,8 @@ installing...
 
 To install an System OS package manager.
 
-* Will install [chocolatey] for **Windows OS**
-* Will install [brew] for **Apple macOS**
+- Will install [chocolatey] for **Windows OS**
+- Will install [brew] for **Apple macOS**
 
 ```s
 $ node-sys -g | --get # or npm run get-installer
@@ -145,33 +161,33 @@ $ node-sys -g | --get # or npm run get-installer
 
 ### FreeBSD
 
-* [pkg]
-* [pkg_add]
+- [pkg]
+- [pkg_add]
 
 ### Linux
 
-* [apt-get] - Debian, Ubuntu
-* [dnf] - fedora
-* [emerge] - Gentoo
-* [nix] - NixOS
-* [pacman] - ArchLinux
-* [yum] - fedora
-* [zypper] - OpenSUSE
-* [chromebrew] - Chrome OS
+- [apt-get] - Debian, Ubuntu
+- [dnf] - fedora
+- [emerge] - Gentoo
+- [nix] - NixOS
+- [pacman] - ArchLinux
+- [yum] - fedora
+- [zypper] - OpenSUSE
+- [chromebrew] - Chrome OS
 
 ### OS X
 
-* [brew]
-* [pkgin]
-* [port]
+- [brew]
+- [pkgin]
+- [port]
 
 ### Solaris
 
-* [pkg](https://docs.oracle.com/cd/E23824_01/html/E21802/gihhp.html)
+- [pkg](https://docs.oracle.com/cd/E23824_01/html/E21802/gihhp.html)
 
 ### Windows
 
-* [chocolatey]
+- [chocolatey]
 
 [apt-get]: https://help.ubuntu.com/community/AptGet/Howto
 [brew]: http://brew.sh
