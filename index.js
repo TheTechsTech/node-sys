@@ -153,26 +153,18 @@ export const where = Sys.where = function (executable) {
 }
 
 /**
- * Determine if a value is a Function
- *
- * @param {Object} value The value to test
- * @returns {boolean} True if value is a Function, otherwise false
- */
-function isFunction(value) {
-  return Object.prototype.toString.call(value) === '[object Function]';
-}
-
-/**
- * Spawn subprocess with `Promise` features, and `progress` callback for `stdout.on('data') `event.
+ * Spawn subprocess with `Promise` features, pass callbacks for `.on('data')` events, with ability to run as admin.
  *
  * @param {String} command - platform command
  * @param {Array} argument - command arguments
- * @param {Function|Object} progressOptions - either callback for `stdout.on('data')` event or spawn options.
+ * @param {Function|Object} progressOptions - either callback for `stdout.on('data')` event or `options`.
+ * - the callback will received an object:
  *```js
- * { handle: object, output: string }
+ * spawn: object, // child process **spawn** `instance`.
+ * output: string, // any **output** data.
+ * fork: object, // if created, child process **fork** `instance`.
  *```
- * - the callback will received an object, child process `instance` **handle**, and any **output** data.
- * - any returns will be the **`resolve()` .then()** handler.
+ * - any `return` is the **`resolve()` .then()** result.
  * @param {Object} options - Any child process `spawn` options, defaults: stdio: 'pipe'.
  * - Additionally:
  *```js
@@ -194,8 +186,10 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
       onmessage: null,
     };
 
+    options.stdio = options.stdio || 'pipe';
+    const forked = isString(options.fork) ? fork(options.fork) : null;
     let progress = progressOptions;
-    if (typeof progressOptions == 'object' && !isFunction(progressOptions))
+    if (isObjectOnly(progressOptions))
       options = Object.assign(options, progressOptions);
 
     if (isFunction(options.onprogress))
@@ -204,12 +198,8 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
     let error = null;
     let output = null;
     let sudo = options.sudo || false;
-    let forking = options.fork || null;
     let onerror = options.onerror || null;
     let onmessage = options.onmessage || null;
-
-    if (typeof forking == 'string')
-      var forked = fork(forking);
 
     delete options.sudo;
     delete options.fork;
@@ -236,13 +226,17 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
       return reject(error, code);
     });
 
-    spawned.on('exit', () => {
+    spawned.on('exit', (code) => {
       if (forked)
         setTimeout(() => {
           forked.kill();
         }, 1000);
 
-      return resolve(output);
+      if (code === 0) {
+        return resolve(output);
+      }
+
+      return reject(error, code);
     });
 
     spawned.stdout.on('data', (data) => {
@@ -250,7 +244,7 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
       output += input;
       try {
         if (isFunction(progress)) {
-          output = progress({ handle: spawned, output: input, fork: forked }) || output;
+          output = progress({ spawn: spawned, output: input, fork: forked }) || output;
         }
       } catch (e) {
         return reject(e.toString());
@@ -283,6 +277,136 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
   });
 }
 
+let toString = Object.prototype.toString;
+
+/**
+ * Determine if a value is an Array.
+ *
+ * @param {Object} value The value to test.
+ * @returns {boolean} True if value is an Array, otherwise false.
+ */
+export const isArray = Sys.isArray = function (value) {
+  return toString.call(value) === '[object Array]';
+}
+
+/**
+ * Determine if a value is undefined.
+ *
+ * @param {Object} value The value to test.
+ * @returns {boolean} True if the value is undefined, otherwise false.
+ */
+export const isUndefined = Sys.isUndefined = function (value) {
+  return typeof value === 'undefined';
+}
+
+/**
+ * Determine if a value is a Buffer.
+ *
+ * @param {Object} value The value to test.
+ * @returns {boolean} True if value is a Buffer, otherwise false.
+ */
+export const isBuffer = Sys.isBuffer = function (value) {
+  return value !== null && !isUndefined(value) && value.constructor !== null && !isUndefined(value.constructor) &&
+    typeof value.constructor.isBuffer === 'function' && value.constructor.isBuffer(value);
+}
+
+/**
+ * Determine if a value is an ArrayBuffer.
+ *
+ * @param {Object} value The value to test.
+ * @returns {boolean} True if value is an ArrayBuffer, otherwise false
+ */
+export const isArrayBuffer = Sys.isArrayBuffer = function (value) {
+  return toString.call(value) === '[object ArrayBuffer]';
+}
+
+/**
+ * Determine if a value is a String.
+ *
+ * @param {Object} value The value to test.
+ * @returns {boolean} True if value is a String, otherwise false.
+ */
+export const isString = Sys.isString = function (value) {
+  return typeof value === 'string';
+}
+
+/**
+ * Determine if a value is a Number.
+ *
+ * @param {Object} value The value to test.
+ * @returns {boolean} True if value is a Number, otherwise false.
+ */
+export const isNumber = Sys.isNumber = function (value) {
+  return typeof value === 'number';
+}
+
+/**
+ * Determine if a value is an Object
+ *
+ * @param {Object} value The value to test.
+ * @returns {boolean} True if value is an Object, otherwise false.
+ */
+export const isObject = Sys.isObject = function (value) {
+  return value !== null && typeof value === 'object';
+}
+
+/**
+ * Determine if a value is only a Object, not an `Array` or `Function`.
+ *
+ * @param {Object} value The value to test.
+ * @return {boolean} True if value is a `Object` only, otherwise false.
+ */
+export const isObjectOnly = Sys.isObjectOnly = function (value) {
+  if (toString.call(value) !== '[object Object]') {
+    return false;
+  }
+
+  let prototype = Object.getPrototypeOf(value);
+  return prototype === null || prototype === Object.prototype;
+}
+
+/**
+ * Determine if a value is a Blob
+ *
+ * @param {Object} value The value to test
+ * @returns {boolean} True if value is a Blob, otherwise false
+ */
+export const isBlob = Sys.isBlob = function (value) {
+  return toString.call(value) === '[object Blob]';
+}
+
+/**
+ * Determine if a value is a Function
+ *
+ * @param {Object} value The value to test
+ * @returns {boolean} True if value is a Function, otherwise false
+ */
+export const isFunction = Sys.isFunction = function (value) {
+  return toString.call(value) === '[object Function]';
+}
+
+/**
+ * Determine if a value is a Date
+ *
+ * @param {Object} value The value to test
+ * @returns {boolean} True if value is a Date, otherwise false
+ */
+export const isDate = Sys.isDate = function (value) {
+  return toString.call(value) === '[object Date]';
+}
+
+/**
+ * Determine if a value is a Stream
+ *
+ * @param {Object} value The value to test
+ * @returns {boolean} True if value is a Stream, otherwise false
+ */
+export const isStream = Sys.isStream = function (value) {
+  return isObject(value) && isFunction(value.pipe);
+}
+
 function Sys() { }
 
 export default Sys;
+
+export const System = Sys;

@@ -1,6 +1,12 @@
 import chai from 'chai';
 import Sys from '../index.js';
-import { packager, installer, where, spawning } from '../index.js';
+import {
+  Readable
+} from 'stream';
+import {
+  packager, installer,
+  where, spawning, System
+} from '../index.js';
 
 const expect = chai.expect;
 
@@ -199,7 +205,7 @@ describe('Method: `installer` and progress callback, platform set to `win64`', f
     let multi = ['unzip', 'nano', 'fake-js'];
     installer(multi, (object) => {
       expect(object).to.be.a('object');
-      expect(object.handle).to.be.instanceOf(Object);
+      expect(object.spawn).to.be.instanceOf(Object);
       expect(object.output).to.be.a('string');
       return 'hello world';
     })
@@ -220,7 +226,7 @@ describe('Method: `spawning`', function () {
     let cmd = process.platform == 'win32' ? 'echo | set /p dummyName=1' : 'printf 1';
     spawning(cmd, [], (object) => {
       expect(object).to.be.a('object');
-      expect(object.handle).to.be.instanceOf(Object);
+      expect(object.spawn).to.be.instanceOf(Object);
       expect(object.output).to.be.a('string');
       return object.output + ' hello';
     }, { stdio: 'pipe', shell: true })
@@ -239,7 +245,7 @@ describe('Method: `spawning`', function () {
   it('should catch error on throw from `progress`', function (done) {
     spawning('echo', [''], () => {
       throw 'hello';
-    }, { stdio: 'pipe', shell: true })
+    }, { shell: true })
       .catch(function (err) {
         expect(err).to.equal('hello');
         done();
@@ -261,7 +267,7 @@ describe('Method: `spawning`', function () {
       onerror: (err) => { return 'testing: ' + err; },
       onprogress: (object) => {
         expect(object).to.be.a('object');
-        expect(object.handle).to.be.instanceOf(Object);
+        expect(object.spawn).to.be.instanceOf(Object);
         expect(object.output).to.be.a('string');
         return 'hello';
       },
@@ -377,5 +383,108 @@ describe('Function: `Sys`', function () {
     expect(Sys).itself.to.respondTo('where');
     expect(Sys).itself.to.respondTo('packager');
     expect(Sys).itself.to.respondTo('spawning');
+  });
+
+});
+
+describe('Function: `System` Methods', function () {
+  it('should instanced itself like a class', function () {
+    const system = new System();
+    expect(system).to.be.an.instanceof(System);
+  });
+
+  it('should respond to commands as methods', function () {
+    expect(System).itself.to.respondTo('isArray');
+    expect(System).itself.to.respondTo('isBuffer');
+    expect(System).itself.to.respondTo('isArrayBuffer');
+    expect(System).itself.to.respondTo('isBlob');
+    expect(System).itself.to.respondTo('isString');
+    expect(System).itself.to.respondTo('isNumber');
+    expect(System).itself.to.respondTo('isUndefined');
+    expect(System).itself.to.respondTo('isObject');
+    expect(System).itself.to.respondTo('isObjectOnly');
+    expect(System).itself.to.respondTo('isDate');
+    expect(System).itself.to.respondTo('isFunction');
+    expect(System).itself.to.respondTo('isStream');
+  });
+
+  class Blob { };
+  Object.defineProperty(Blob.prototype, Symbol.toStringTag, {
+    value: 'Blob',
+    writable: false,
+    enumerable: false,
+    configurable: true
+  });
+
+  it('should validate Array', function () {
+    expect(System.isArray([])).to.equal(true);
+    expect(System.isArray({
+      length: 5
+    })).to.equal(false);
+  });
+
+  it('should validate Buffer', function () {
+    expect(System.isBuffer(Buffer.from('a'))).to.equal(true);
+    expect(System.isBuffer(null)).to.equal(false);
+    expect(System.isBuffer(undefined)).to.equal(false);
+  });
+
+  it('should validate ArrayBuffer', function () {
+    expect(System.isArrayBuffer(new ArrayBuffer(2))).to.equal(true);
+    expect(System.isArrayBuffer({})).to.equal(false);
+  });
+
+  it('should validate Blob', function () {
+    expect(System.isBlob(new Blob())).to.equal(true);
+  });
+
+  it('should validate String', function () {
+    expect(System.isString('')).to.equal(true);
+    expect(System.isString({
+      toString: function () {
+        return '';
+      }
+    })).to.equal(false);
+  });
+
+  it('should validate Number', function () {
+    expect(System.isNumber(123)).to.equal(true);
+    expect(System.isNumber('123')).to.equal(false);
+  });
+
+  it('should validate Undefined', function () {
+    expect(System.isUndefined()).to.equal(true);
+    expect(System.isUndefined(null)).to.equal(false);
+  });
+
+  it('should validate Object', function () {
+    expect(System.isObject({})).to.equal(true);
+    expect(System.isObject([])).to.equal(true);
+    expect(System.isObject(null)).to.equal(false);
+  });
+
+  it('should validate only Object, not a Array or Function', function () {
+    expect(System.isObjectOnly({})).to.equal(true);
+    expect(System.isObjectOnly([])).to.equal(false);
+    expect(System.isObjectOnly(() => { })).to.equal(false);
+    expect(System.isObjectOnly(null)).to.equal(false);
+    expect(System.isObjectOnly(Object.create({}))).to.equal(false);
+  });
+
+  it('should validate Date', function () {
+    expect(System.isDate(new Date())).to.equal(true);
+    expect(System.isDate(Date.now())).to.equal(false);
+  });
+
+  it('should validate Function', function () {
+    expect(System.isFunction(function () { })).to.equal(true);
+    expect(System.isFunction('function')).to.equal(false);
+  });
+
+  it('should validate Stream', function () {
+    expect(System.isStream(new Readable())).to.equal(true);
+    expect(System.isStream({
+      foo: 'bar'
+    })).to.equal(false);
   });
 });

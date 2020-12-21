@@ -42,11 +42,18 @@ console.log('To fully install a `pandoc` package run: ' + sys.installer + ' pand
 
 ### Install `vim` package onto host, using system's default package manager
 
-* Returns a Promise
+* Returns a `Promise`
 
 ```js
 import { installer } from  'node-sys';
-installer('vim')
+
+// Progress callback for any output doing installation.
+// Any value returned in `callback` will be the final resolved output result.
+const onprogress = (object) => {
+  console.log(object.output);
+}
+
+installer('vim', onprogress)
 .then(function(data){
     // returns installation output
     console.log(data);
@@ -56,7 +63,9 @@ installer('vim')
 });
 ```
 
-## API - spawning(command, arguments, progressOptions, options)
+## API - `spawning`(command, arguments, progressOptions, options)
+
+`import { spawning } from 'node-sys';`
 
 `Spawning` takes an additional argument, `progressOptions`, its [`options`](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options) are the same as those of `child_process.spawn` plus:
 
@@ -72,16 +81,35 @@ installer('vim')
 
 *The progress callback will receive an object with these properties:*
 
-* `handle:` *Object* - Spawned child process instance handler.
+* `spawn:` *Object* - Spawned child process instance handle.
   * Access the child process object.
 
 * `output:` *String* - Output from stdout.
   * Output can be altered and if returned will replace the otherwise resolved result.
 
-* `fork:` *Object* - An additional [forked](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options) Node Js process handler, IPC communication channel.
+* `fork:` *Object* - An additional [forked](https://nodejs.org/api/child_process.html#child_process_child_process_fork_modulepath_args_options) Node Js process handle, IPC communication channel.
   * Execute additional processing base off of sub child process output, with module a script.
 
 If there's an error running the child process, received data on stderr, or errors in progress callback, `spawning` rejects the returned promise.
+
+### General type `check` functions
+
+```js
+import {
+  isArray,
+  isUndefined,
+  isBuffer,
+  isArrayBuffer,
+  isString,
+  isNumber,
+  isObject,
+  isObjectOnly,
+  isBlob,
+  isFunction,
+  isDate,
+  isStream
+} from 'node-sys';
+```
 
 ### CLI Usage
 
