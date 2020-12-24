@@ -1,11 +1,12 @@
 import chai from 'chai';
-import Sys, { isLinux, isMac, isWindows } from '../index.js';
+import Sys from '../index.js';
 import {
   Readable
 } from 'stream';
 import {
   packager, installer,
-  where, spawning, System
+  where, spawning, System,
+  isLinux, isMac, isWindows, require
 } from '../index.js';
 
 const expect = chai.expect;
@@ -368,6 +369,14 @@ describe('Method: `where`', function () {
   it('should return null/empty for executable not found', function (done) {
     let found = where('fake-js');
     expect(found).to.be.null;
+    done();
+  });
+});
+
+describe('Method: `require`', function () {
+  it('should return included module like CommonJs', function (done) {
+    const which = require('which');
+    expect(Sys.isFunction(which)).to.equal(true);
     done();
   });
 });

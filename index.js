@@ -4,6 +4,7 @@ import which from 'which';
 import { spawn, fork } from 'child_process';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
 
 const __filename = fileURLToPath(
   import.meta.url);
@@ -44,6 +45,8 @@ const SYS_MANAGERS = {
   win64: ['choco'],
   shell: ['powershell'],
 };
+
+function Sys() { }
 
 function sysManager() {
   let managers = SYS_MANAGERS[process.platform];
@@ -452,8 +455,12 @@ export const isMac = Sys.isMac = function () {
   return process.platform === 'darwin';
 }
 
-function Sys() { }
+/**
+ * Include an `CommonJS` module the old way.
+ *
+ * @param {string} module
+ */
+export const require = createRequire(import.meta.url);
 
 export default Sys;
-
 export const System = Sys;

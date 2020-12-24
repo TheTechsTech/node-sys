@@ -17,6 +17,8 @@ A `spawning` cross-platform version of Node's child_process.`spawn` that returns
 - `fork` another **script**, a _Node Js_ module instance, for additional sub processing base on `stderr` or `stdout` events.
   - pass additional callback for the `message` event.
 
+A series of general use case `strick` type checkers.
+
 ## Install
 
 ```sh
@@ -130,6 +132,14 @@ import { where } from 'node-sys';
 
 // Like the unix `which` utility, will be a `string`, or `null` for not found.
 let found = where('node');
+```
+
+### Use CommonJS `require` like before in ESM
+
+```js
+import { require } from 'node-sys';
+
+const package = require('package');
 ```
 
 ### CLI Usage

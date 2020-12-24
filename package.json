@@ -1,7 +1,7 @@
 {
   "name": "node-sys",
-  "version": "1.1.2",
-  "description": "Universal package installer, get the command for managing packages, or auto install any package, using one command for all platforms. Automate the installation of macOS Brew, and Windows Chocolatey package managers. A promisify child process of spawn, run as administrator.",
+  "version": "1.1.3",
+  "description": "Universal package installer, get the command for managing packages, or auto install any package, using one command for all platforms. Automate the installation of macOS Brew, and Windows Chocolatey package managers. A promisify child process of spawn, and run as administrator. A series of strick type checkers.",
   "type": "module",
   "main": "index.js",
   "bin": {
@@ -48,7 +48,8 @@
     "child_process",
     "promisify",
     "administrator",
-    "sudo"
+    "sudo",
+    "require"
   ],
   "author": "l. stubbs <technoexpressnet@gmail.com>",
   "contributors": [

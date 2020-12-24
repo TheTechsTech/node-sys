@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
-import { packager, installer, where } from '../index.js';
+import {
+  packager, installer, where,
+  spawning, isNull, isMac, isWindows
+} from '../index.js';
 import minimist from 'minimist';
 import {
   createRequire
 } from 'module';
-import { spawn } from 'child_process';
+
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -70,30 +73,16 @@ if (argv.help || argv.h) {
 } else if (argv.version || argv.v) {
   console.log(pack.version);
 } else if ((argv.get || argv.g)
-  && (
-    (process.platform == 'darwin' && where('brew') === null)
-    || (process.platform == 'win32' && where('choco') === null)
-  )) {
-  let installOutput = '';
-  const child = spawn(CMD[process.platform], [SYSTEM[process.platform]], {
-    stdio: 'pipe',
-  });
-
-  child.on('close', () => {
-    return installOutput;
-  });
-
-  child.on('exit', () => {
-    return installOutput;
-  });
-
-  child.stdout.on('data', (data) => {
-    installOutput += data.toString();
-  });
-
-  child.stderr.on('data', (data) => {
-    throw (data.toString());
-  });
+  && ((isMac() && isNull(where('brew')))
+    || (isWindows() && isNull(where('choco'))))
+) {
+  spawning(CMD[process.platform], [SYSTEM[process.platform]])
+    .then(function () {
+      console.log('Finish!')
+    })
+    .catch(function (err) {
+      console.error(err);
+    })
 } else if (argv) {
   let args = argv._;
   let packages = args.shift();
