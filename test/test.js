@@ -1,5 +1,5 @@
 import chai from 'chai';
-import Sys from '../index.js';
+import Sys, { isLinux, isMac, isWindows } from '../index.js';
 import {
   Readable
 } from 'stream';
@@ -387,7 +387,7 @@ describe('Function: `Sys`', function () {
 
 });
 
-describe('Function: `System` Methods', function () {
+describe('Function: `System` Check Methods', function () {
   it('should instanced itself like a class', function () {
     const system = new System();
     expect(system).to.be.an.instanceof(System);
@@ -406,6 +406,11 @@ describe('Function: `System` Methods', function () {
     expect(System).itself.to.respondTo('isDate');
     expect(System).itself.to.respondTo('isFunction');
     expect(System).itself.to.respondTo('isStream');
+    expect(System).itself.to.respondTo('isNull');
+    expect(System).itself.to.respondTo('isBool');
+    expect(System).itself.to.respondTo('isWindows');
+    expect(System).itself.to.respondTo('isLinux');
+    expect(System).itself.to.respondTo('isMac');
   });
 
   class Blob { };
@@ -486,5 +491,25 @@ describe('Function: `System` Methods', function () {
     expect(System.isStream({
       foo: 'bar'
     })).to.equal(false);
+  });
+
+  it('should validate null', function () {
+    expect(System.isNull(null)).to.equal(true);
+    expect(System.isNull()).to.equal(false);
+    expect(System.isNull(false)).to.equal(false);
+    expect(System.isNull(0)).to.equal(false);
+  });
+
+  it('should validate boolean', function () {
+    expect(System.isBool(true)).to.equal(true);
+    expect(System.isBool(false)).to.equal(true);
+    expect(System.isBool(null)).to.equal(false);
+    expect(System.isBool()).to.equal(false);
+    expect(System.isBool('')).to.equal(false);
+    expect(System.isBool(1)).to.equal(false);
+    expect(System.isBool(0)).to.equal(false);
+    expect(System.isBool(isWindows())).to.equal(true);
+    expect(System.isBool(isLinux())).to.equal(true);
+    expect(System.isBool(isMac())).to.equal(true);
   });
 });

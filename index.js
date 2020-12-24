@@ -77,7 +77,7 @@ function sysManager() {
  */
 export const packager = Sys.packager = function () {
   let sys = sysManager();
-  if (Array.isArray(sys) && sys[0])
+  if (isArray(sys) && sys[0])
     return {
       sudo: (sys[0] === 'sudo'),
       command: ((!sys[2]) ? sys[0] : sys[1]),
@@ -105,7 +105,7 @@ export const installer = Sys.installer = function (application, progress) {
     return new Promise((resolve, reject) => { return reject("No package, application name missing."); });
 
   let manager = sysManager();
-  if (!Array.isArray(manager))
+  if (!isArray(manager))
     return new Promise((resolve, reject) => { return reject(manager); });
   let cmd = manager[0];
   let args = null;
@@ -115,7 +115,7 @@ export const installer = Sys.installer = function (application, progress) {
   if (manager[2])
     install = [manager[2]];
 
-  let whatToInstall = (Array.isArray(application)) ? [].concat(application).concat(['-y']) : [].concat([application]).concat(['-y']);
+  let whatToInstall = isArray(application) ? [].concat(application).concat(['-y']) : [].concat([application]).concat(['-y']);
   let system = whatToInstall;
   if ((args) && (!install))
     system = args.concat(whatToInstall);
@@ -209,7 +209,7 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
 
     if (sudo) {
       argument = [command].concat(argument);
-      command = (process.platform == 'win32') ? join(__dirname, 'bin', 'sudo.bat') : 'sudo';
+      command = (isWindows()) ? join(__dirname, 'bin', 'sudo.bat') : 'sudo';
     };
 
     const spawned = spawn(command, argument, options);
@@ -403,6 +403,53 @@ export const isDate = Sys.isDate = function (value) {
  */
 export const isStream = Sys.isStream = function (value) {
   return isObject(value) && isFunction(value.pipe);
+}
+
+/**
+ * Determine if a value is a boolean
+ *
+ * @param {Object} value The value to test
+ * @returns {boolean} True if value is a boolean, otherwise false
+ */
+export const isBool = Sys.isBool = function (value) {
+  return (value === true) || (value === false);
+}
+
+/**
+ * Determine if a value is a null
+ *
+ * @param {Object} value The value to test
+ * @returns {boolean} True if value is a null, otherwise false
+ */
+export const isNull = Sys.isNull = function (value) {
+  return value === null;
+}
+
+/**
+ * Determine if platform is Windows
+ *
+ * @returns {boolean} True if Windows OS, otherwise false
+ */
+export const isWindows = Sys.isWindows = function () {
+  return process.platform === 'win32';
+}
+
+/**
+ * Determine if platform is Linux
+ *
+ * @returns {boolean} True if Linux OS, otherwise false
+ */
+export const isLinux = Sys.isLinux = function () {
+  return process.platform === 'linux';
+}
+
+/**
+ * Determine if platform is Apple Mac
+ *
+ * @returns {boolean} True if Apple macOS, otherwise false
+ */
+export const isMac = Sys.isMac = function () {
+  return process.platform === 'darwin';
 }
 
 function Sys() { }

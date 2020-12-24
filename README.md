@@ -112,7 +112,12 @@ import {
   isBlob, // True if value is a Blob, otherwise false.
   isFunction, // True if value is a Function, otherwise false.
   isDate, // True if value is a Date, otherwise false.
-  isStream //True if value is a Stream, otherwise false
+  isStream, // True if value is a Stream, otherwise false.
+  isNull, // True if value is a null, otherwise false.
+  isBool, // True if value is a boolean, otherwise false.
+  isWindows, // True if platform a Windows OS, otherwise false.
+  isLinux, // True if platform a Linux OS, otherwise false.
+  isMac, // True if platform a Apple macOS, otherwise false.
 } from 'node-sys';
 ```
 
