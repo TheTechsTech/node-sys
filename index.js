@@ -18,6 +18,7 @@ const SYS_COMMANDS = {
   brew: 'brew install',
   port: 'sudo port install',
   pkgin: 'sudo pkgin install',
+  winget: 'winget install',
   choco: 'choco install',
   powershell: "powershell 'Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))'",
   'apt-get': 'sudo apt-get install',
@@ -37,7 +38,7 @@ const SYS_COMMANDS = {
  */
 const SYS_MANAGERS = {
   darwin: ['brew', 'port', 'pkgin'],
-  win32: ['choco', 'powershell'],
+  win32: ['winget', 'choco', 'powershell'],
   linux: ['apt-get', 'yum', 'dnf', 'nix', 'zypper', 'emerge', 'pacman', 'crew'],
   freebsd: ['pkg', 'pkg_add'],
   sunos: ['pkg'],
@@ -118,7 +119,8 @@ export const installer = Sys.installer = function (application, progress) {
   if (manager[2])
     install = [manager[2]];
 
-  let whatToInstall = isArray(application) ? [].concat(application).concat(['-y']) : [].concat([application]).concat(['-y']);
+  let silentCmd = isWindows() ? ['--accept-package-agreements', '--accept-source-agreements', '-h'] : ['-y'];
+  let whatToInstall = isArray(application) ? [].concat(application).concat(silentCmd) : [].concat([application]).concat(silentCmd);
   let system = whatToInstall;
   if ((args) && (!install))
     system = args.concat(whatToInstall);
@@ -126,7 +128,7 @@ export const installer = Sys.installer = function (application, progress) {
     system = args.concat(install).concat(whatToInstall);
 
   if (cmd != 'powershell') {
-    if (cmd.includes('choco') && process.platform == 'win32') {
+    if (cmd.includes('choco') && isWindows()) {
       cmd = where('choco');
       system = [cmd].concat(system);
       cmd = join(__dirname, 'bin', 'sudo.bat');
@@ -161,7 +163,7 @@ export const where = Sys.where = function (executable) {
  * @param {String} command - platform command
  * @param {Array} argument - command arguments
  * @param {Function|Object} progressOptions - either callback for `stdout.on('data')` event or `options`.
- * - the callback will received an object:
+ * - the callback will receive an object:
  *```js
  * spawn: object, // child process **spawn** `instance`.
  * output: string, // any **output** data.
@@ -212,7 +214,7 @@ export const spawning = Sys.spawning = function (command, argument, progressOpti
 
     if (sudo) {
       argument = [command].concat(argument);
-      command = (isWindows()) ? join(__dirname, 'bin', 'sudo.bat') : 'sudo';
+      command = isWindows() ? join(__dirname, 'bin', 'sudo.bat') : 'sudo';
     };
 
     const spawned = spawn(command, argument, options);
