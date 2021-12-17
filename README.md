@@ -202,6 +202,7 @@ $ node-sys -g | --get # or npm run get-installer
 
 ### Windows
 
+- [winget]
 - [chocolatey]
 
 [apt-get]: https://help.ubuntu.com/community/AptGet/Howto
@@ -216,5 +217,6 @@ $ node-sys -g | --get # or npm run get-installer
 [pkgin]: https://github.com/cmacrae/saveosx
 [pkg]: https://www.freebsd.org/doc/handbook/pkgng-intro.html
 [pkg_add]: https://www.freebsd.org/cgi/man.cgi?query=pkg_add&manpath=FreeBSD+7.2-RELEASE
+[winget]: https://github.com/microsoft/winget-cli
 [chocolatey]: https://chocolatey.org
 [chromebrew]: https://github.com/skycocker/chromebrew
