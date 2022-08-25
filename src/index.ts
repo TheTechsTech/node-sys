@@ -242,7 +242,17 @@ export const spawning = (Sys.spawning = function (
 
         if (sudo) {
             argument = [command].concat(argument);
-            command = isWindows() ? join(__dirname, 'bin', 'sudo.bat') : 'sudo';
+
+            // sudo
+            if (isWindows()) {
+                command = join(__dirname, 'bin', 'sudo.bat');
+            } else {
+                if (where('sudo') !== null) {
+                    command = 'sudo';
+                } else {
+                    command = '';
+                }
+            }
         }
 
         const spawned = spawn(command, argument, options);
