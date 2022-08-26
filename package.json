@@ -3,16 +3,20 @@
   "version": "1.1.7",
   "description": "Universal package installer, get the command for managing packages, or auto install any package, using one command for all platforms. Automate the installation of macOS Brew, and Windows Chocolatey package managers. A promisify child process of spawn, and run as administrator. A series of strick type checkers.",
   "type": "module",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "bin": {
     "node-sys": "bin/installer.js"
   },
   "scripts": {
-    "test": "mocha -R list test/*.js --timeout=0",
+    "test": "npm run build && mocha -R list test/*.js --timeout=0",
     "coverage": "npx c8 --reporter json --reporter text npm test && npx codecov -f coverage/coverage-final.json",
-    "get-installer": "node ./bin/installer.js --get"
+    "get-installer": "node ./bin/installer.js --get",
+    "build": "tsc -p ./ || echo done",
+    "prepare": "npm run build"
   },
   "files": [
+    "dist",
+    "src",
     "index.js",
     "LICENSE",
     "README.md",
@@ -53,7 +57,8 @@
   ],
   "author": "l. stubbs <technoexpressnet@gmail.com>",
   "contributors": [
-    "Arve Seljebu"
+    "Arve Seljebu",
+    "Amin Yahyaabadi <aminyahyaabadi74@gmail.com>"
   ],
   "license": "MIT",
   "bugs": {
@@ -61,14 +66,22 @@
   },
   "homepage": "https://github.com/techno-express/node-sys#readme",
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=12.22"
   },
   "dependencies": {
-    "which": "^2.0.2",
-    "minimist": "1.2.6"
+    "minimist": "1.2.6",
+    "which": "^2.0.2"
+  },
+  "optionalDependencies": {
+    "@types/node": "^18.7.13"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.3",
+    "@types/minimist": "1.2.2",
+    "@types/mocha": "^9.1.1",
+    "@types/which": "^2.0.1",
     "chai": "^4.3.6",
-    "mocha": "^8.4.0"
+    "mocha": "^8.4.0",
+    "typescript": "^4.7.4"
   }
 }
