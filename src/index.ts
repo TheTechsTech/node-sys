@@ -1,7 +1,12 @@
-'use strict';
-
 import which from 'which';
-import { spawn, fork, SpawnOptionsWithoutStdio } from 'child_process';
+import {
+    spawn,
+    fork,
+    SpawnOptionsWithoutStdio,
+    ChildProcess,
+    ChildProcessWithoutNullStreams,
+    Serializable,
+} from 'child_process';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
@@ -148,7 +153,7 @@ export const installer = (Sys.installer = function (
 
     if (cmd != 'powershell') {
         if (cmd.includes('choco') && isWindows()) {
-            cmd = where('choco');
+            cmd = where('choco') ?? 'choco';
             system = [cmd].concat(system);
             cmd = join(__dirname, 'bin', 'sudo.bat');
         }
@@ -177,6 +182,24 @@ export const where = (Sys.where = function (executable: string) {
     return found;
 });
 
+export type SpawningOnProgress = (args: {
+    spawn: ChildProcessWithoutNullStreams;
+    output: any;
+    fork: ChildProcess | null;
+}) => string | string[] | null;
+
+export type SpawningOnError = (err: string) => Error | string;
+
+export type SpawningOnMessage = (data: Serializable) => void;
+
+export type SpawningOptions = SpawnOptionsWithoutStdio & {
+    sudo?: boolean;
+    fork?: boolean | null;
+    onerror?: null | SpawningOnError;
+    onprogress?: null | SpawningOnProgress;
+    onmessage?: null | SpawningOnMessage;
+};
+
 /**
  * Spawn subprocess with `Promise` features, pass callbacks for `.on('data')` events, with ability to run as admin.
  *
@@ -203,18 +226,10 @@ export const where = (Sys.where = function (executable: string) {
 export const spawning = (Sys.spawning = function (
     command: string,
     argument: Array<string>,
-    progressOptions: Function | object,
-    options?:
-        | (SpawnOptionsWithoutStdio & {
-              sudo?: boolean;
-              fork?: boolean | null;
-              onerror?: Function | null;
-              onprogress?: Function | null;
-              onmessage?: Function | null;
-          })
-        | undefined
-): Promise<string | null> {
-    return new Promise<string | null>((resolve, reject) => {
+    progressOptions: SpawningOnProgress | object,
+    options?: SpawningOptions | undefined
+): Promise<string | string[] | null> {
+    return new Promise<string | string[] | null>((resolve, reject) => {
         options = options || {
             stdio: 'pipe',
             sudo: false,
@@ -229,8 +244,8 @@ export const spawning = (Sys.spawning = function (
         if (isObjectOnly(progressOptions))
             options = Object.assign(options, progressOptions);
         if (isFunction(options.onprogress)) progress = options.onprogress;
-        let error: Error | null = null;
-        let output: string | null = null;
+        let error: Error | string | null = null;
+        let output: string | string[] | null = null;
         let sudo = options.sudo || false;
         let onerror = options.onerror || null;
         let onmessage = options.onmessage || null;
@@ -264,7 +279,7 @@ export const spawning = (Sys.spawning = function (
                 return resolve(output);
             }
 
-            return reject(error, code);
+            return reject(error);
         });
         spawned.on('exit', (code) => {
             if (forked)
@@ -276,10 +291,10 @@ export const spawning = (Sys.spawning = function (
                 return resolve(output);
             }
 
-            return reject(error, code);
+            return reject(error);
         });
         spawned.stdout.on('data', (data) => {
-            let input = data.toString();
+            let input: string = data.toString();
             output += input;
 
             try {
@@ -301,7 +316,7 @@ export const spawning = (Sys.spawning = function (
             }
         });
         spawned.stderr.on('data', (data) => {
-            let err = data.toString();
+            let err: string = data.toString();
             error += err;
             if (isFunction(onerror))
                 /* c8 ignore next */
