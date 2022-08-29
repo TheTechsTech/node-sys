@@ -34,7 +34,7 @@ export const where = (Sys.where = function (executable: string) {
 });
 
 // use sudo if installed (e.g. it might not be required in a Docker containers)
-const sudo = where('sudo') ?? '';
+const sudo = where('sudo') !== null ? 'sudo' : '';
 
 /**
  * Supported package commands
@@ -247,7 +247,7 @@ export const spawning = (Sys.spawning = function (
         if (isFunction(options.onprogress)) progress = options.onprogress;
         let error: Error | string | null = null;
         let output: string | string[] | null = null;
-        let sudo = options.sudo || false;
+        let isSudo = options.sudo || false;
         let onerror = options.onerror || null;
         let onmessage = options.onmessage || null;
         delete options.sudo;
@@ -256,18 +256,14 @@ export const spawning = (Sys.spawning = function (
         delete options.onprogress;
         delete options.onmessage;
 
-        if (sudo) {
+        if (isSudo) {
             argument = [command].concat(argument);
 
             // sudo
             if (isWindows()) {
                 command = join(__dirname, 'bin', 'sudo.bat');
             } else {
-                if (where('sudo') !== null) {
-                    command = 'sudo';
-                } else {
-                    command = '';
-                }
+                command = sudo;
             }
         }
 
