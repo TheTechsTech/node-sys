@@ -99,7 +99,7 @@ function sysManager(): string | string[] {
         return 'System OS package manager not found';
     }
 
-    return SYS_COMMANDS[managers[0]].split(' ');
+    return SYS_COMMANDS[managers[0]].trimStart().split(' ');
 }
 
 /**
