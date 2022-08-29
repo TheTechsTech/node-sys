@@ -17,26 +17,43 @@ const __filename = fileURLToPath(import.meta.url);
 
 const __dirname = dirname(__filename);
 
-const sync = which.sync;
+/**
+ * Like the unix `which` utility.
+ *
+ * Finds the first instance of a specified executable in the PATH environment variable.
+ *
+ * @param String executable
+ *
+ * @returns String|Null
+ */
+export const where = (Sys.where = function (executable: string) {
+    let found = which.sync(executable, {
+        nothrow: true,
+    });
+    return found;
+});
+
+// use sudo if installed (e.g. it might not be required in a Docker containers)
+const sudo = where('sudo') !== null ? 'sudo' : '';
 
 /**
  * Supported package commands
  */
 const SYS_COMMANDS = {
     brew: 'brew install',
-    port: 'sudo port install',
-    pkgin: 'sudo pkgin install',
+    port: `${sudo} port install`,
+    pkgin: `${sudo} pkgin install`,
     winget: 'winget install',
     choco: 'choco install',
     powershell:
         "powershell 'Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))'",
-    'apt-get': 'sudo apt-get install',
-    yum: 'sudo yum install',
-    dnf: 'sudo dnf install',
+    'apt-get': `${sudo} apt-get install`,
+    yum: `${sudo} yum install`,
+    dnf: `${sudo} dnf install`,
     nix: 'nix-env --install',
-    zypper: 'sudo zypper in',
-    emerge: 'sudo emerge -a',
-    pacman: 'sudo pacman -S',
+    zypper: `${sudo} zypper in`,
+    emerge: `${sudo} emerge -a`,
+    pacman: `${sudo} pacman -S`,
     pkg: 'pkg install',
     pkg_add: 'pkg_add',
     crew: 'crew install',
@@ -82,7 +99,7 @@ function sysManager(): string | string[] {
         return 'System OS package manager not found';
     }
 
-    return SYS_COMMANDS[managers[0]].split(' ');
+    return SYS_COMMANDS[managers[0]].trimStart().split(' ');
 }
 
 /**
@@ -102,7 +119,7 @@ export const packager = (Sys.packager = function (): object | Error {
     let sys = sysManager();
     if (isArray(sys) && sys[0])
         return {
-            sudo: sys[0] === 'sudo',
+            sudo: sys[0].endsWith('sudo'),
             command: !sys[2] ? sys[0] : sys[1],
             installer: sys.join(' '),
         };
@@ -164,22 +181,6 @@ export const installer = (Sys.installer = function (
             return reject('No package manager installed!');
         });
     }
-});
-
-/**
- * Like the unix `which` utility.
- *
- * Finds the first instance of a specified executable in the PATH environment variable.
- *
- * @param String executable
- *
- * @returns String|Null
- */
-export const where = (Sys.where = function (executable: string) {
-    let found = sync(executable, {
-        nothrow: true,
-    });
-    return found;
 });
 
 export type SpawningOnProgress = (args: {
@@ -246,7 +247,7 @@ export const spawning = (Sys.spawning = function (
         if (isFunction(options.onprogress)) progress = options.onprogress;
         let error: Error | string | null = null;
         let output: string | string[] | null = null;
-        let sudo = options.sudo || false;
+        let isSudo = options.sudo || false;
         let onerror = options.onerror || null;
         let onmessage = options.onmessage || null;
         delete options.sudo;
@@ -255,18 +256,14 @@ export const spawning = (Sys.spawning = function (
         delete options.onprogress;
         delete options.onmessage;
 
-        if (sudo) {
+        if (isSudo) {
             argument = [command].concat(argument);
 
             // sudo
             if (isWindows()) {
                 command = join(__dirname, 'bin', 'sudo.bat');
             } else {
-                if (where('sudo') !== null) {
-                    command = 'sudo';
-                } else {
-                    command = '';
-                }
+                command = sudo;
             }
         }
 
