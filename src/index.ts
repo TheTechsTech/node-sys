@@ -158,7 +158,7 @@ export const installer = (Sys.installer = function (
     if (manager[1]) args = [manager[1]];
     if (manager[2]) install = [manager[2]];
     let silentCmd = isWindows()
-        ? ['--accept-package-agreements', '--accept-source-agreements', '-h']
+        ? ['--accept-package-agreements', '--accept-source-agreements']
         : ['-y'];
     let whatToInstall: string[] = isArray(application)
         ? application.concat(silentCmd)
