@@ -172,7 +172,7 @@ export const installer = (Sys.installer = function (
         if (cmd.includes('choco') && isWindows()) {
             cmd = where('choco') ?? 'choco';
             system = [cmd].concat(system);
-            cmd = join(__dirname, 'bin', 'sudo.bat');
+            cmd = join(__dirname, '..', 'bin', 'sudo.bat');
         }
 
         return spawning(cmd, system, progress);
@@ -261,7 +261,7 @@ export const spawning = (Sys.spawning = function (
 
             // sudo
             if (isWindows()) {
-                command = join(__dirname, 'bin', 'sudo.bat');
+                command = join(__dirname, '..', 'bin', 'sudo.bat');
             } else {
                 command = sudo;
             }
